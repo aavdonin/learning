@@ -14,11 +14,23 @@ int main(void) {
       continue;
     };
     switch (menu_item) {	//do what it says
-      case '1':
-        printf("Item 1\n");	//New contact
+      case '1': ;	//New contact	//semicolon to workaround the error: a label can only be part of a statement and a declaration is not a statement
+        char fname[NAME_MAX_LEN];
+        char lname[NAME_MAX_LEN];
+        int number, id;
+        printf("Adding new contact...\nEnter first name: ");
+        scanf("%s", fname);
+        printf("Enter last name: ");
+        scanf("%s", lname);
+        printf("Enter phone number: ");
+        scanf("%d", &number);
+        id = add_contact(fname,lname,number);
+        if (id >= 0)
+          printf("Successfully added contact #%d\n",++id);
         break;
       case '2':
         printf("Item 2\n");	//List all contacts
+        print_all();
         break;
       case '3':
         printf("Item 3\n");	//Search by name
@@ -28,6 +40,7 @@ int main(void) {
         break;
       case '5':
         printf("Item 5\n");	//Clear phonebook
+        clear_all();
         break;
     };
   };
