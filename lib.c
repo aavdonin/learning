@@ -35,13 +35,13 @@ void clear_all() {
   };
 };
 
-int add_contact(char *fname, char *lname, int num) {
+int add_contact(char *fname, char *lname, int number) {
   int i;
   for(i=0;i<PHONEBOOK_CAPACITY;i++) {
     if (contacts[i].number == 0) {
       strcpy(contacts[i].first_name, fname);
       strcpy(contacts[i].last_name, lname);
-      contacts[i].number = num;
+      contacts[i].number = number;
       break;
     };
   };
@@ -50,4 +50,36 @@ int add_contact(char *fname, char *lname, int num) {
     return -1;
   };
   return i;
+};
+
+void search_by_number(int number) {
+  int i, count = 0;
+  for(i=0;i<PHONEBOOK_CAPACITY;i++) {
+    if (contacts[i].number == number) {
+      print_contact(contacts[i]);
+      count++;
+    }
+    else if (contacts[i].number == 0)
+      break;
+  };
+  if (count)
+    printf("Found %d contact(s).\n",count);
+  else
+    printf("Not found.\n");
+};
+
+void search_by_name(char *name) {
+  int i, count = 0;
+  for(i=0;i<PHONEBOOK_CAPACITY;i++) {
+    if (strstr(contacts[i].first_name, name) != NULL || strstr(contacts[i].last_name, name) != NULL ) {
+      print_contact(contacts[i]);
+      count++;
+    }
+    else if (contacts[i].number == 0)
+      break;
+  };
+  if (count)
+    printf("Found %d contact(s).\n",count);
+  else
+    printf("Not found.\n");
 };

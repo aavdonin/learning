@@ -3,3 +3,5 @@
 
 void print_all();
 void clear_all();
+void search_by_number(int num);
+void search_by_name(char *name);

@@ -29,18 +29,21 @@ int main(void) {
           printf("Successfully added contact #%d\n",++id);
         break;
       case '2':
-        printf("Item 2\n");	//List all contacts
-        print_all();
+        print_all();	//List all contacts
         break;
       case '3':
-        printf("Item 3\n");	//Search by name
+        printf("Search contact by first or last name: ");	//Search by name
+        scanf("%s", fname);
+        search_by_name(fname);
         break;
       case '4':
-        printf("Item 4\n");	//Search by number
+        printf("Search contact by phone number: ");	//Search by number
+//      int number; //errors redeclaration
+        scanf("%d", &number);
+        search_by_number(number);
         break;
       case '5':
-        printf("Item 5\n");	//Clear phonebook
-        clear_all();
+        clear_all();	//Clear phonebook
         break;
     };
   };
