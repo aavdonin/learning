@@ -35,5 +35,8 @@ int main(void) {
         print_result((*funcs[menu_item-1])(a,b));   //call it and print result
     };
   };
+  for (i=0;i<LIB_COUNT;i++) {   //close opened handles
+      if (libs[i]) dlclose(libs[i]);
+  };
   return 0;
 }
