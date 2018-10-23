@@ -1,9 +1,14 @@
 #include <stdio.h>
+#include <dlfcn.h>
 #include "lib.h"
 
 int main(void) {
   int menu_item;
   struct complex a, b;
+  //list plugin folder
+  //load existing libs
+  //get symbols for operation funcs
+  //draw menu according to found symbols
   for (menu_item = -1;menu_item != '5';) {
     printf("1)Add\n2)Sub\n3)Mul\n4)Div\n5)Quit\n");
     while ((menu_item = getchar()) == 10);
