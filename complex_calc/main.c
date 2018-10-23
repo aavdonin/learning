@@ -1,34 +1,38 @@
 #include <stdio.h>
+#include <dlfcn.h>
 #include "lib.h"
+#define LIB_COUNT 4
 
 int main(void) {
   int menu_item;
   struct complex a, b;
+  char *func_names[] = {"add","sub","mul","div",};
+  char *lib_locs[] = {"plugin/libadd.so","plugin/libsub.so","plugin/libmul.so","plugin/libdiv.so",};
+  void *libs[LIB_COUNT];
+  struct complex (*funcs[LIB_COUNT])(struct complex, struct complex);
+  int i;
+  for (i=0;i<LIB_COUNT;i++) {   //open libs and get symbols for functions
+      libs[i] = dlopen(lib_locs[i],RTLD_LAZY);
+      if (libs[i]) funcs[i] = dlsym(libs[i],func_names[i]);
+      else funcs[i] = NULL;
+  };
   for (menu_item = -1;menu_item != '5';) {
-    printf("1)Add\n2)Sub\n3)Mul\n4)Div\n5)Quit\n");
+    for (i=0;i<LIB_COUNT;i++) { //draw menu according to found symbols
+      printf("%i)%s\n",i+1,funcs[i]?func_names[i]:"");
+    };
+    printf("5)quit\n");
     while ((menu_item = getchar()) == 10);
     if (menu_item < '1' || menu_item > '5') {	//validate input
       printf("You entered wrong number, try again...\n");
       continue;
+    }
+    else {
+      menu_item = menu_item - '0';  // char '2' -> int 2, etc
     };
-    if (menu_item == '5') break;
-    printf("1st complex number:\n");
-    a = get_complex();
-    printf("2nd complex number:\n");
-    b = get_complex();
-    switch (menu_item) {	//do what it says
-      case '1': ;	//Add
-        print_result(add(a,b));
-        break;
-      case '2':         //Sub
-        print_result(sub(a,b));
-        break;
-      case '3':         //Mul
-        print_result(mul(a,b));
-        break;
-      case '4':         //Div
-        print_result(div(a,b));
-        break;
+    if (menu_item == 5) break;
+    else if (funcs[menu_item-1]) {  //if chosen function loaded
+        get_numbers(&a,&b);
+        print_result((*funcs[menu_item-1])(a,b));   //call it and print result
     };
   };
   return 0;
