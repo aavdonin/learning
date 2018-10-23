@@ -13,7 +13,8 @@ int main(void) {
   int i;
   for (i=0;i<LIB_COUNT;i++) {   //open libs and get symbols for functions
       libs[i] = dlopen(lib_locs[i],RTLD_LAZY);
-      funcs[i] = dlsym(libs[i],func_names[i]);
+      if (libs[i]) funcs[i] = dlsym(libs[i],func_names[i]);
+      else funcs[i] = NULL;
   };
   for (menu_item = -1;menu_item != '5';) {
     for (i=0;i<LIB_COUNT;i++) { //draw menu according to found symbols
