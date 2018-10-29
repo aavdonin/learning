@@ -44,14 +44,15 @@ int main(void) {
 				}
 				break;
 			case '4':		//close
-				fclose(file);
-				file = NULL;
-				*filename = '\0';
+                                if (file) {
+                                    fclose(file);
+                                    file = NULL;
+                                    *filename = '\0';
+                                }
 				break;
 		}
 	}
     endwin();
-
     return 0;
 }
 
