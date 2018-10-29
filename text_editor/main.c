@@ -6,7 +6,7 @@ FILE *file;
 char filename[FILENAME_MAX_LEN];
 
 int main(void) {
-	int menu_item = -1;
+    int menu_item = -1;
     initscr();
 	noecho();
     if (!has_colors()) {
