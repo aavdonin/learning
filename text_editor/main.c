@@ -7,6 +7,8 @@ char filename[FILENAME_MAX_LEN];
 
 int main(void) {
     int menu_item = -1;
+    char **bufptr;
+    long bufsize, bufused;
     initscr();
 	noecho();
     if (!has_colors()) {
@@ -32,8 +34,21 @@ int main(void) {
 				getstr(filename);
 				noecho();
 				file = fopen(filename, "r");
+                                if (!file) {
+                                    attron(COLOR_PAIR(1));
+                                    mvprintw(1, 8, "Can't open file!");
+                                    getch();
+                                    attroff(COLOR_PAIR(1));
+                                    break;
+                                }
+                                bufsize = load_text(file, bufptr);
 				break;
 			case '2':		//edit
+                                if (file) {
+                                    clear();
+                                    mvprintw(0,0,"%s",*bufptr);
+                                    getch();
+                                }
 				break;
 			case '3':		//save
 				if (file) {
