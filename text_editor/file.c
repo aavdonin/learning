@@ -8,7 +8,7 @@ long load_text(FILE *file, char **bufptr, long *bufused) {
     long bsize = ((fsize/BLOCK_SIZE) + 1) * BLOCK_SIZE;
     char *b = malloc(bsize);
     if (!b) {
-        fprintf(stderr,"Can't allocate %ld bytes of memory!", bsize);
+        fprintf(stderr,"Can't allocate %ld bytes of memory!\n", bsize);
         exit(1);
     }
     if (fread(b, 1, fsize, file) < fsize) {
