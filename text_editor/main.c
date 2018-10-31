@@ -8,9 +8,7 @@ char filename[FILENAME_MAX_LEN];
 
 int main(void) {
     int menu_item = -1;
-    char **bufptr;
     char *buf;
-    bufptr = &buf;
     long bufsize, bufused;
     initscr();
     noecho();
@@ -44,7 +42,7 @@ int main(void) {
                     attroff(COLOR_PAIR(1));
                     break;
                 }
-                bufsize = load_text(file, bufptr);
+                bufsize = load_text(file, &buf, &bufused);
                 break;
             case '2':        //edit
                 if (file) {
@@ -56,10 +54,15 @@ int main(void) {
                 break;
             case '3':        //save
                 if (file) {
-                    attron(COLOR_PAIR(2));
-                    mvprintw(3, 8, "OK!");
-                    attroff(COLOR_PAIR(2));
-                    move(6, 0);
+                    file = freopen(filename, "w", file);
+                    save_text(file, buf, bufused);
+                    file = freopen(filename, "r", file);
+                    if (file) {
+                        attron(COLOR_PAIR(2));
+                        mvprintw(3, 8, "OK!");
+                        attroff(COLOR_PAIR(2));
+                        move(6, 0);
+                    }
                 }
                 break;
             case '4':        //close

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "defines.h"
 
-long load_text(FILE *file, char **bufptr) {
+long load_text(FILE *file, char **bufptr, long *bufused) {
     fseek(file, 0, SEEK_END);
     long fsize = ftell(file);
     rewind(file);
@@ -17,5 +17,13 @@ long load_text(FILE *file, char **bufptr) {
     }
     b[fsize] = '\0';
     *bufptr = b;
+    *bufused = fsize;
     return bsize;
+}
+
+void save_text(FILE* file, char *buf, long bufused) {
+    if (fwrite(buf, 1, bufused, file) < bufused) {
+        fprintf(stderr,"Something wrong while writing file contents...\n");
+        exit(1);
+    }
 }
