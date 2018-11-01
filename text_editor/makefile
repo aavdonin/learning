@@ -1,5 +1,5 @@
-all: main.o file.o
-	gcc main.o file.o -lncurses -o editor
+all: main.o file.o text.o
+	gcc main.o file.o text.o -lncurses -o editor
 
 main.o: main.c
 	gcc -c main.c
@@ -7,8 +7,11 @@ main.o: main.c
 file.o: file.c
 	gcc -c file.c
 
-debug: main.c file.c
-	gcc -g main.c file.c -lncurses -o editor
+text.o: text.c
+	gcc -c text.c
+
+debug: main.c file.c text.c
+	gcc -g main.c file.c text.c -lncurses -o editor
 
 clean:
 	rm -rf *.o *.txt editor
