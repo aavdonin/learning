@@ -46,8 +46,6 @@ int main(void) {
                 break;
             case '2':        //edit
                 if (file) {
-                    clear();
-                    //mvprintw(0,0,"%s",buf);
                     draw_screen(buf,0);
                     refresh();
                     getch();

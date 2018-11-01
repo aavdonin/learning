@@ -1,5 +1,4 @@
 #include <ncurses.h>
-#include <string.h>
 #include "defines.h"
 
 void draw_screen(char *buf, long startpos) {
