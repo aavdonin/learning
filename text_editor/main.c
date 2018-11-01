@@ -10,8 +10,11 @@ int main(void) {
     int menu_item = -1;
     char *buf;
     long bufsize, bufused;
+    long startpos = 0;  //position to start file displaying from
     initscr();
     noecho();
+    cbreak();
+    keypad(stdscr, TRUE);
     if (!has_colors()) {
         endwin();
         printf("There's no colors here :(\n");
@@ -46,9 +49,7 @@ int main(void) {
                 break;
             case '2':        //edit
                 if (file) {
-                    draw_screen(buf,0);
-                    refresh();
-                    getch();
+                    edit_mode(buf,&startpos);
                 }
                 break;
             case '3':        //save
