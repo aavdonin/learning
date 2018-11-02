@@ -1,4 +1,6 @@
 #include <ncurses.h>
+#include <string.h>
+#include <stdlib.h>
 #include "defines.h"
 
 void draw_screen(char *buf, long startpos) {
@@ -30,4 +32,38 @@ void edit_mode(char *buf, long *startpos) {
     while ((key = getch()) != 27) { //While pressed key is not ESC
 
     }
+}
+
+void del_chr(char *buf, long *bufused, long position) {
+    if (position >= *bufused) {
+        fprintf(stderr,"Erasing out of buffer bounds!\n");
+        exit(1);
+    }
+    memcpy(buf + position, buf + position + 1, *bufused - position);
+    *bufused--;
+}
+
+void add_chr(char *buf, long *bufused, long *bufsize, long *position, char chr) {
+    if (*position >= *bufused) {
+        fprintf(stderr,"Writing out of buffer bounds!\n");
+        exit(1);
+    }
+    if ((*bufsize - *bufused) < 1) {    //check free space in buffer
+        increase_buffer(&buf,*bufsize);
+    }
+    memcpy(buf + *position + 1, buf + *position, *bufused - *position);
+    buf[*position] = chr;
+    *bufused++;
+    *position++;
+}
+
+void increase_buffer(char **bufptr, long *bufsize) {
+    char *new_buf = malloc(*bufsize + BLOCK_SIZE);
+    if (!new_buf) {
+        fprintf(stderr,"Can't allocate %ld bytes of memory!\n", *bufsize + BLOCK_SIZE);
+        exit(1);
+    }
+    memcpy(new_buf,*bufptr,*bufsize);
+    *bufptr = new_buf;
+    *bufsize += BLOCK_SIZE;
 }
