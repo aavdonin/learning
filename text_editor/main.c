@@ -73,6 +73,11 @@ int main(void) {
                     free(buf);
                 }
                 break;
+            case '7':   ;       //edit buffer (debug)
+                int k=0;
+                long pos=6;
+                for (;k<20;k++) add_chr(&buf, &bufused, &bufsize,&pos,'X');
+            break;
         }
     }
     endwin();

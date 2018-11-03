@@ -17,12 +17,12 @@ long load_text(FILE *file, char **bufptr, long *bufused) {
     }
     b[fsize] = '\0';
     *bufptr = b;
-    *bufused = fsize;
+    *bufused = fsize+1;
     return bsize;
 }
 
 void save_text(FILE* file, char *buf, long bufused) {
-    if (fwrite(buf, 1, bufused, file) < bufused) {
+    if (fwrite(buf, 1, bufused-1, file) < bufused-1) {
         fprintf(stderr,"Something wrong while writing file contents...\n");
         exit(1);
     }
