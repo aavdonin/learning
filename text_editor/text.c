@@ -5,6 +5,7 @@
 
 void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos);
 long get_curs_pos(char screen_text[LINES][COLS+1]);
+long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]);
 void move_curs_to(long pos, char screen_text[LINES][COLS+1]);
 
 void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
@@ -40,6 +41,7 @@ void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
 
 void edit_mode(char *buf, long *startpos) {
     int key = KEY_UP;
+    int x, y;   //coordinates for cursor positioning
     char screen_text[LINES][COLS+1];
     long curs_pos = 0;  //position of cursor
     draw_screen(buf, screen_text, *startpos);
@@ -49,8 +51,14 @@ void edit_mode(char *buf, long *startpos) {
     while ((key = getch()) != 27) { //While pressed key is not ESC
         switch (key) {
             case KEY_UP:
+                getyx(stdscr,y,x);
+                curs_pos = get_curs_pos_atxy(x, y-1, screen_text);
+                move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_DOWN:
+                getyx(stdscr,y,x);
+                curs_pos = get_curs_pos_atxy(x, y+1, screen_text);
+                move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_LEFT:
                 move_curs_to(--curs_pos, screen_text);
@@ -101,6 +109,15 @@ long get_curs_pos(char screen_text[LINES][COLS+1]) {
     getyx(stdscr,y,x);
     for (i=0; i<y; i++) pos += strlen(screen_text[i]);
     pos += x;
+    return pos;
+}
+
+long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]) {
+    long pos = 0;
+    int i;
+    for (i=0; i<y; i++) pos += strlen(screen_text[i]);
+    pos += x;
+    return pos;
 }
 
 void move_curs_to(long pos, char screen_text[LINES][COLS+1]) {
