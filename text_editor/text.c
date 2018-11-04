@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include "defines.h"
 
-void draw_screen(char *buf, long startpos) {
+void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos);
+long get_curs_pos(char screen_text[LINES][COLS+1]);
+void move_curs_to(long pos, char screen_text[LINES][COLS+1]);
+
+void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
     clear();
     int i;
     int eof = 0;
-    char screen_text[LINES][COLS+1];
     for (i=0; i<LINES; i++) {
         int j = 0;
         while (j < COLS) {
@@ -37,9 +40,25 @@ void draw_screen(char *buf, long startpos) {
 
 void edit_mode(char *buf, long *startpos) {
     int key = KEY_UP;
-    draw_screen(buf, *startpos);
+    char screen_text[LINES][COLS+1];
+    long curs_pos = 0;  //position of cursor
+    draw_screen(buf, screen_text, *startpos);
+    move(0,0);
+    //curs_pos = get_curs_pos(screen_text);
+    curs_pos = 0;
     while ((key = getch()) != 27) { //While pressed key is not ESC
-
+        switch (key) {
+            case KEY_UP:
+                break;
+            case KEY_DOWN:
+                break;
+            case KEY_LEFT:
+                move_curs_to(--curs_pos, screen_text);
+                break;
+            case KEY_RIGHT:
+                move_curs_to(++curs_pos, screen_text);
+                break;
+        }
     }
 }
 
@@ -48,7 +67,7 @@ void del_chr(char *buf, long *bufused, long position) {
         fprintf(stderr,"Erasing out of buffer bounds!\n");
         exit(1);
     }
-    memcpy(buf + position, buf + position + 1, *bufused - position);
+    memmove(buf + position, buf + position + 1, *bufused - position);
     (*bufused)--;
 }
 
@@ -74,4 +93,26 @@ void increase_buffer(char **bufptr, long *bufsize) {
     }
     else *bufptr = newbuf;
     *bufsize += BLOCK_SIZE;
+}
+
+long get_curs_pos(char screen_text[LINES][COLS+1]) {
+    int x, y, i;
+    long pos = 0;
+    getyx(stdscr,y,x);
+    for (i=0; i<y; i++) pos += strlen(screen_text[i]);
+    pos += x;
+}
+
+void move_curs_to(long pos, char screen_text[LINES][COLS+1]) {
+    int i;
+    long len;
+    for (i=0; i<LINES; i++) {
+        len = strlen(screen_text[i]);
+        if (pos < len) {
+            move(i,pos);
+            break;
+        }
+        else
+            pos -= len;
+    }
 }
