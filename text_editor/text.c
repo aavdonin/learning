@@ -64,12 +64,12 @@ void edit_mode(char *buf, long *startpos, long *bufused) {
                     draw_screen(buf, screen_text, *startpos);
                     curs_pos = get_curs_pos_atxy(x, y, screen_text);
                 }
+                else if (y == 0 && *startpos <= 0) curs_pos = 0;
                 else
                     curs_pos = get_curs_pos_atxy(x, y-1, screen_text);
                 move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_DOWN:
-                if (curs_pos >= *bufused) break;
                 getyx(stdscr,y,x);
                 if (y == LINES-1) {
                     (*startpos) += strlen(screen_text[0]);
@@ -78,6 +78,7 @@ void edit_mode(char *buf, long *startpos, long *bufused) {
                 }
                 else
                     curs_pos = get_curs_pos_atxy(x, y+1, screen_text);
+                if (((*startpos) + curs_pos) >= ((*bufused) - 2)) curs_pos = (*bufused) - (*startpos) - 2;
                 move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_LEFT:
@@ -99,7 +100,7 @@ void edit_mode(char *buf, long *startpos, long *bufused) {
                     move_curs_to(--curs_pos, screen_text);
                 break;
             case KEY_RIGHT:
-                if (curs_pos >= *bufused) break;
+                if (((*startpos) + curs_pos) >= ((*bufused) - 2)) break;
                 getyx(stdscr,y,x);
                     if (y == LINES-1 && x == strlen(screen_text[y])-1) {
                         (*startpos) += strlen(screen_text[0]);
