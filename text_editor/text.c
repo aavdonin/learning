@@ -116,7 +116,10 @@ long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]) {
     long pos = 0;
     int i;
     for (i=0; i<y; i++) pos += strlen(screen_text[i]);
-    pos += x;
+    if (strlen(screen_text[y]) -1 >= x)
+        pos += x;
+    else
+        pos += strlen(screen_text[y]) - 1;
     return pos;
 }
 
