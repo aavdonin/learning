@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "defines.h"
 
 long load_text(FILE *file, char **bufptr, long *bufused) {

@@ -2,12 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "defines.h"
-
-void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos);
-void scroll_up(char *buf, char screen_text[LINES][COLS+1], long *startpos);
-long get_curs_pos(char screen_text[LINES][COLS+1]);
-long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]);
-void move_curs_to(long pos, char screen_text[LINES][COLS+1]);
+#include "text.h"
 
 void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
     clear();
@@ -60,6 +55,8 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {
     int x, y;   //coordinates for cursor positioning
     char screen_text[LINES][COLS+1];
     long curs_pos = 0;  //position of cursor
+    char insert_flag = 1;   //0 - replace, 1 - insert
+    curs_set(insert_flag +1);
     draw_screen(buf, screen_text, *startpos);
     move(0,0);
     curs_pos = 0;
@@ -164,11 +161,30 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {
                     curs_pos = (*bufused) - (*startpos) - 2;
                 move_curs_to(curs_pos, screen_text);
                 break;
+            case KEY_IC:    //Insert
+                insert_flag ^= 1; //invert flag
+                curs_set(insert_flag +1);
             default:
                 if ((key >= 0x20 && key <= 0x7E) || key == '\n') {      //printable chars
-                    add_chr(bufptr, bufused, bufsize, (*startpos) + curs_pos, key);
-                    draw_screen(buf, screen_text, *startpos);
-                    move_curs_to(++curs_pos, screen_text);
+                    if (insert_flag) {
+                        add_chr(bufptr, bufused, bufsize, (*startpos) + curs_pos, key);
+                        draw_screen(buf, screen_text, *startpos);
+                        move_curs_to(++curs_pos, screen_text);
+                    }
+                    else {
+                        buf[(*startpos) + curs_pos] = key;
+                        getyx(stdscr,y,x);
+                        draw_screen(buf, screen_text, *startpos);
+                        if (((*startpos) + curs_pos) >= ((*bufused) - 2)) break;
+                        if (y == LINES-1 && x == strlen(screen_text[y])-1) {
+                            (*startpos) += strlen(screen_text[0]);
+                            draw_screen(buf, screen_text, *startpos);
+                            curs_pos = get_curs_pos_atxy(0, y, screen_text);
+                            move_curs_to(curs_pos, screen_text);
+                        }
+                        else
+                            move_curs_to(++curs_pos, screen_text);
+                    }
                 }
                 break;
         }
