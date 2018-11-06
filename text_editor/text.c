@@ -39,7 +39,7 @@ void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
     refresh();
 }
 
-void edit_mode(char *buf, long *startpos) {
+void edit_mode(char *buf, long *startpos, long *bufused) {
     int key = KEY_UP;
     int x, y;   //coordinates for cursor positioning
     char screen_text[LINES][COLS+1];
@@ -52,19 +52,73 @@ void edit_mode(char *buf, long *startpos) {
         switch (key) {
             case KEY_UP:
                 getyx(stdscr,y,x);
-                curs_pos = get_curs_pos_atxy(x, y-1, screen_text);
+                if (y == 0 && *startpos > 0) {
+                    int newline_cnt = 0;
+                    while (--(*startpos)) {     //search previous line
+                        if (buf[*startpos] == '\n') newline_cnt++;
+                        if (newline_cnt == 2) {
+                            (*startpos)++;
+                            break;
+                        }
+                    }
+                    draw_screen(buf, screen_text, *startpos);
+                    curs_pos = get_curs_pos_atxy(x, y, screen_text);
+                }
+                else
+                    curs_pos = get_curs_pos_atxy(x, y-1, screen_text);
                 move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_DOWN:
+                if (curs_pos >= *bufused) break;
                 getyx(stdscr,y,x);
-                curs_pos = get_curs_pos_atxy(x, y+1, screen_text);
+                if (y == LINES-1) {
+                    (*startpos) += strlen(screen_text[0]);
+                    draw_screen(buf, screen_text, *startpos);
+                    curs_pos = get_curs_pos_atxy(x, y, screen_text);
+                }
+                else
+                    curs_pos = get_curs_pos_atxy(x, y+1, screen_text);
                 move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_LEFT:
-                move_curs_to(--curs_pos, screen_text);
+                getyx(stdscr,y,x);
+                if (y == 0 && x ==0 && *startpos > 0) {
+                    int newline_cnt = 0;
+                    while (--(*startpos)) {     //search previous line
+                        if (buf[*startpos] == '\n') newline_cnt++;
+                        if (newline_cnt == 2) {
+                            (*startpos)++;
+                            break;
+                        }
+                    }
+                    draw_screen(buf, screen_text, *startpos);
+                    curs_pos = get_curs_pos_atxy(COLS, y, screen_text);
+                    move_curs_to(curs_pos, screen_text);
+                }
+                else
+                    move_curs_to(--curs_pos, screen_text);
                 break;
             case KEY_RIGHT:
-                move_curs_to(++curs_pos, screen_text);
+                if (curs_pos >= *bufused) break;
+                getyx(stdscr,y,x);
+                    if (y == LINES-1 && x == strlen(screen_text[y])-1) {
+                        (*startpos) += strlen(screen_text[0]);
+                        draw_screen(buf, screen_text, *startpos);
+                        curs_pos = get_curs_pos_atxy(0, y, screen_text);
+                        move_curs_to(curs_pos, screen_text);
+                    }
+                else
+                    move_curs_to(++curs_pos, screen_text);
+                break;
+            case KEY_HOME:
+                getyx(stdscr,y,x);
+                curs_pos = get_curs_pos_atxy(0, y, screen_text);
+                move_curs_to(curs_pos, screen_text);
+                break;
+            case KEY_END:
+                getyx(stdscr,y,x);
+                curs_pos = get_curs_pos_atxy(COLS, y, screen_text);
+                move_curs_to(curs_pos, screen_text);
                 break;
         }
     }

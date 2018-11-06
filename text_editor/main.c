@@ -49,7 +49,7 @@ int main(void) {
                 break;
             case '2':        //edit
                 if (file) {
-                    edit_mode(buf,&startpos);
+                    edit_mode(buf,&startpos, &bufused);
                 }
                 break;
             case '3':        //save
@@ -71,6 +71,7 @@ int main(void) {
                     file = NULL;
                     *filename = '\0';
                     free(buf);
+                    startpos = 0;
                 }
                 break;
             case '7':   ;       //edit buffer (debug)
