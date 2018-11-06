@@ -41,10 +41,10 @@ void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
 
 void scroll_up(char *buf, char screen_text[LINES][COLS+1], long *startpos) {  //changes screen_text, *startpos, resets cursor position
     if (*startpos > 0) {
-        int newline_cnt = 0;
+        int newlines = 2;
         while (--(*startpos)) {     //search previous line
-            if (buf[*startpos] == '\n') newline_cnt++;
-            if (newline_cnt == 2) {
+            if (buf[*startpos] == '\n') newlines--;
+            if (newlines == 0) {
                 (*startpos)++;
                 break;
             }
@@ -138,6 +138,30 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {
                     curs_pos--;
                 del_chr(buf, bufused, (*startpos) + curs_pos);
                 draw_screen(buf, screen_text, *startpos);
+                move_curs_to(curs_pos, screen_text);
+                break;
+            case KEY_PPAGE:     //page up
+                getyx(stdscr,y,x);
+                if (*startpos <= 0)
+                    curs_pos = 0;
+                else {
+                    long seek = (*startpos);
+                    while ((*startpos) > 0 && ((*startpos) + get_curs_pos_atxy(COLS+1, LINES, screen_text)) != seek)
+                        scroll_up(buf, screen_text, startpos);
+                    curs_pos = get_curs_pos_atxy(x, y, screen_text);
+                }
+                move_curs_to(curs_pos, screen_text);
+                break;
+            case KEY_NPAGE:     //page down
+                getyx(stdscr,y,x);
+                curs_pos = get_curs_pos_atxy(COLS+1, LINES, screen_text);
+                if ((*startpos) + curs_pos < (*bufused) - 2) {
+                    (*startpos) += curs_pos;
+                    draw_screen(buf, screen_text, *startpos);
+                    curs_pos = get_curs_pos_atxy(x, y, screen_text);
+                }
+                else
+                    curs_pos = (*bufused) - (*startpos) - 2;
                 move_curs_to(curs_pos, screen_text);
                 break;
             default:
