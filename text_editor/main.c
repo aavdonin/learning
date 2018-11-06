@@ -49,7 +49,7 @@ int main(void) {
                 break;
             case '2':        //edit
                 if (file) {
-                    edit_mode(buf,&startpos, &bufused);
+                    edit_mode(&buf,&startpos, &bufused, &bufsize);
                 }
                 break;
             case '3':        //save
@@ -74,11 +74,6 @@ int main(void) {
                     startpos = 0;
                 }
                 break;
-            case '7':   ;       //edit buffer (debug)
-                int k=0;
-                long pos=6;
-                for (;k<20;k++) add_chr(&buf, &bufused, &bufsize,&pos,'X');
-            break;
         }
     }
     endwin();
