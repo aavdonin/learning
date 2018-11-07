@@ -4,7 +4,7 @@
 
 long load_text(FILE *file, char **bufptr, long *bufused) {
     fseek(file, 0, SEEK_END);
-    long fsize = ftell(file);
+    long fsize = ftell(file);   //file size
     rewind(file);
     long bsize = ((fsize/BLOCK_SIZE) + 1) * BLOCK_SIZE;
     char *b = malloc(bsize);

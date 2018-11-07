@@ -8,9 +8,9 @@ char filename[FILENAME_MAX_LEN];
 
 int main(void) {
     int menu_item = -1;
-    char *buf;
-    long bufsize, bufused;
-    long startpos = 0;  //position to start file displaying from
+    char *buf;              //buffer to hold file contents
+    long bufsize, bufused;  //buffer size and count of bytes used
+    long startpos = 0;      //position to start file displaying from
     initscr();
     noecho();
     cbreak();
@@ -23,7 +23,7 @@ int main(void) {
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_GREEN, COLOR_BLACK);
-    while (menu_item != '5') {
+    while (menu_item != '5') {  //main menu routine
         if (menu_item != '3') 
             print_menu();
         menu_item = getch();
