@@ -200,7 +200,7 @@ void add_chr(char **bufptr, long *bufused, long *bufsize, long position, char ch
     if ((*bufsize - *bufused) < 1) {    //check free space in buffer
         increase_buffer(bufptr,bufsize);
     };
-    memmove(buf + position + 1, buf + position, *bufused - position -1);
+    memmove(buf + position + 1, buf + position, (*bufused) - position);
     buf[position] = chr;
     (*bufused)++;
 }
