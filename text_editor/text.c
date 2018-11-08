@@ -4,8 +4,10 @@
 #include "defines.h"
 #include "text.h"
 
-void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {   //function to fill screen_text array and print it on screen
-    clear();                                                                    //from buffer starting with startpos'th character
+void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {
+    //function to fill screen_text array and print it on screen
+    //from buffer starting with startpos'th character
+    clear();
     int i;
     for (i=0; i<LINES; i++) {
         int j = 0;
@@ -25,8 +27,10 @@ void draw_screen(char *buf, char screen_text[LINES][COLS+1], long startpos) {   
     refresh();
 }
 
-void scroll_up(char *buf, char screen_text[LINES][COLS+1], long *startpos) {  //finds the beginnig of previous line
-    if (*startpos > 0) {                                                      //changes screen_text, *startpos, resets cursor position
+void scroll_up(char *buf, char screen_text[LINES][COLS+1], long *startpos) {
+    //finds the beginnig of previous line
+    //changes screen_text, *startpos, resets cursor position
+    if (*startpos > 0) {
         int newlines = 2;
         while (--(*startpos)) {
             if (buf[*startpos] == '\n') newlines--;
@@ -39,7 +43,8 @@ void scroll_up(char *buf, char screen_text[LINES][COLS+1], long *startpos) {  //
     }
 }
 
-void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   //edit mode routine
+void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {
+    //edit mode routine
     char *buf;
     buf = *bufptr;
     int key = 0;    //pressed key code
@@ -51,7 +56,8 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   
     draw_screen(buf, screen_text, *startpos);
     move(0,0);
     curs_pos = 0;
-    while ((key = getch()) != 27) { //Getting user input, while pressed key is not ESC
+    while ((key = getch()) != 27) {
+        //Getting user input, while pressed key is not ESC
         switch (key) {
             case KEY_UP:
                 getyx(stdscr,y,x);
@@ -76,7 +82,8 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   
                 }
                 else
                     curs_pos = get_curs_pos_atxy(x, y+1, screen_text);
-                if (((*startpos) + curs_pos) >= ((*bufused) - 2)) curs_pos = (*bufused) - (*startpos) - 2;
+                if (((*startpos) + curs_pos) >= ((*bufused) - 2)) 
+                    curs_pos = (*bufused) - (*startpos) - 2;
                 move_curs_to(curs_pos, screen_text);
                 break;
             case KEY_LEFT:
@@ -134,8 +141,10 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   
                     curs_pos = 0;
                 else {
                     long seek = (*startpos);
-                    while ((*startpos) > 0 && ((*startpos) + get_curs_pos_atxy(COLS+1, LINES, screen_text)) != seek)
+                    int lastpos = get_curs_pos_atxy(COLS+1, LINES, screen_text);
+                    while ((*startpos) > 0 && ((*startpos) + lastpos) > seek)
                         scroll_up(buf, screen_text, startpos);
+                        lastpos = get_curs_pos_atxy(COLS+1, LINES, screen_text);
                     curs_pos = get_curs_pos_atxy(x, y, screen_text);
                 }
                 move_curs_to(curs_pos, screen_text);
@@ -156,9 +165,11 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   
                 insert_flag ^= 1; //invert flag
                 curs_set(insert_flag + 1);
             default:
-                if ((key >= 0x20 && key <= 0x7E) || key == '\n') {      //printable chars
+                if ((key >= 0x20 && key <= 0x7E) || key == '\n') {
+                //printable chars
                     if (insert_flag) {      //insert mode
-                        add_chr(bufptr, bufused, bufsize, (*startpos) + curs_pos, key);
+                        add_chr(bufptr, bufused, bufsize, \
+                        (*startpos) + curs_pos, key);
                         draw_screen(buf, screen_text, *startpos);
                         move_curs_to(++curs_pos, screen_text);
                     }
@@ -182,7 +193,8 @@ void edit_mode(char **bufptr, long *startpos, long *bufused, long *bufsize) {   
     }
 }
 
-void del_chr(char *buf, long *bufused, long position) {     //deletes char from buffer at specified position
+void del_chr(char *buf, long *bufused, long position) {
+    //deletes char from buffer at specified position
     if (position >= *bufused) {
         fprintf(stderr,"Erasing out of buffer bounds!\n");
         exit(1);
@@ -191,7 +203,9 @@ void del_chr(char *buf, long *bufused, long position) {     //deletes char from 
     (*bufused)--;
 }
 
-void add_chr(char **bufptr, long *bufused, long *bufsize, long position, char chr) {    //adds char to buffer at specified position
+void add_chr(char **bufptr, long *bufused, long *bufsize, long position,\
+ char chr) {
+    //adds char to buffer at specified position
     char *buf = *bufptr;
     if (position >= *bufused) {
         fprintf(stderr,"Writing out of buffer bounds!\n");
@@ -205,17 +219,20 @@ void add_chr(char **bufptr, long *bufused, long *bufsize, long position, char ch
     (*bufused)++;
 }
 
-void increase_buffer(char **bufptr, long *bufsize) {    //allocates more memory for buffer
+void increase_buffer(char **bufptr, long *bufsize) {
+    //allocates more memory for buffer
     char *newbuf = realloc(*bufptr, *bufsize + BLOCK_SIZE);
     if (!newbuf) {
-        fprintf(stderr,"Can't allocate %ld bytes of memory!\n", *bufsize + BLOCK_SIZE);
+        fprintf(stderr,"Can't allocate %ld bytes of memory!\n",\
+        *bufsize + BLOCK_SIZE);
         exit(1);
     }
     else *bufptr = newbuf;
     *bufsize += BLOCK_SIZE;
 }
 
-long get_curs_pos(char screen_text[LINES][COLS+1]) {    //get current cursor position
+long get_curs_pos(char screen_text[LINES][COLS+1]) {
+    //get current cursor position
     int x, y, i;
     long pos = 0;
     getyx(stdscr,y,x);
@@ -224,7 +241,8 @@ long get_curs_pos(char screen_text[LINES][COLS+1]) {    //get current cursor pos
     return pos;
 }
 
-long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]) { //get cursor position at given coordinates
+long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]) {
+    //get cursor position at given coordinates
     long pos = 0;
     int i;
     for (i=0; i<y; i++) pos += strlen(screen_text[i]);
@@ -235,7 +253,8 @@ long get_curs_pos_atxy(int x, int y, char screen_text[LINES][COLS+1]) { //get cu
     return pos;
 }
 
-void move_curs_to(long pos, char screen_text[LINES][COLS+1]) {      //move cursor to given position
+void move_curs_to(long pos, char screen_text[LINES][COLS+1]) {
+    //move cursor to given position
     int i;
     long len;
     for (i=0; i<LINES; i++) {
