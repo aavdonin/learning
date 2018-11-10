@@ -11,5 +11,5 @@ void exit_failure(char *message) {
 }
 
 void print_rec(struct file_rec rec) {
-    printw("%c%-20s %.0ld", rec.type, rec.filename, rec.size);
+    printw("%c%-25s %.0ld", rec.type, rec.filename, rec.size);
 }
