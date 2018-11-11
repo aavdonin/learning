@@ -1,13 +1,8 @@
 #include <ncurses.h>
-#include <dirent.h>
-#include <stdlib.h>
 #include "fs.h"
 #include "ui.h"
 
 int main(void) {
-    int num, i;
-    struct dirent **entry;
-    struct file_rec record;
     initscr();
     refresh();
     noecho();
@@ -28,18 +23,15 @@ int main(void) {
 
     mvwprintw(win1,0,0,"Name       Size");
     wrefresh(win1);
-    num = scandir(".", &entry, filter_func, alphasort);
-    if (num<0) {
-        exit_failure("Directory read error");
-    }
+
     move(3,0);
-    for (i = 0; i < num; i++) {
-        record = get_rec(entry[i]->d_name);
-        print_rec(record);
+    struct file_rec *records = NULL;
+    int rec_num, i;
+    rec_num = get_dir_info(".", &records);
+    for (i=0;i<rec_num;i++) {
+        print_rec(records[i]);
         printw("\n");
-        free(entry[i]);
     }
-    free(entry);
 
     refresh();
     getch();

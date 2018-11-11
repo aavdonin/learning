@@ -10,7 +10,7 @@ fs.o: fs.c fs.h ui.h
 ui.o: ui.c fs.h
 	gcc -c ui.c
 
-debug: main.c fc.c fs.h ui.c ui.h
+debug: main.c fs.c fs.h ui.c ui.h
 	gcc -g main.c fs.c ui.c -lncurses -o fileman
 
 clean:
