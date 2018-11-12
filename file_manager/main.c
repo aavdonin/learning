@@ -4,6 +4,7 @@
 
 int main(void) {
     initscr();
+    start_color();
     refresh();
     noecho();
     keypad(stdscr, TRUE);
@@ -18,24 +19,23 @@ int main(void) {
     WINDOW *win1, *win2;
     win1 = derwin(borderwin1,LINES-2,COLS/2-2,1,1);
     win2 = derwin(borderwin2,LINES-2,COLS/2-2,1,1);
-    mvwprintw(win2,0,0,"Soon I'll become a file manager!\n");
-    wrefresh(win2);
 
-    mvwprintw(win1,0,0,"Name       Size\n");
-    wrefresh(win1);
+    print_header(win1);
+    print_header(win2);
 
-    move(3,0);
     struct file_rec *records = NULL;
     int rec_num, i;
     rec_num = get_dir_info(".", &records);
     for (i=0;i<rec_num;i++) {
         print_rec(win1, records[i]);
-        wprintw(win1,"\n");
     }
     wrefresh(win1);
+    //selection(win1, 4, 1); //enable selection of 4th line
+    //selection(win1, 4, 0); //disable selection of 4th line
 
     refresh();
     getch();
+        
     endwin();
     return 0;
 }
