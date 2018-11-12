@@ -15,7 +15,7 @@ struct file_rec get_rec(char *filename) {
     struct stat buffer;
     if (stat(filename, &buffer) < 0)
         exit_failure("Failed to get file size");
-    record.filename = filename;
+    strcpy(record.filename, filename);
     record.size = buffer.st_size;
     if (S_ISDIR(buffer.st_mode)) {
         record.type = '/';

@@ -17,10 +17,14 @@ void print_rec(WINDOW *winptr, struct file_rec rec) {
     x/3-1, rec.size);
 }
 
-void print_header(WINDOW *winptr) {
-    int x,y;
+void print_list(WINDOW *winptr, struct file_rec *records, int startpos, \
+int rec_num) {
+    int x,y,i;
     getmaxyx(winptr, y, x);
     mvwprintw(winptr,0,0," %-*s%-*s\n", x*2/3-1, "Name", x/3-1, "Size");
+    for (i=0; (startpos+i < rec_num) && (i < y-1);i++) {
+        print_rec(winptr, records[startpos+i]);
+    }
     wrefresh(winptr);
 }
 

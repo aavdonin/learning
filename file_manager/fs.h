@@ -4,7 +4,7 @@
 
 struct file_rec {
     char type;
-    char *filename;
+    char filename[255];
     long size;
 };
 
