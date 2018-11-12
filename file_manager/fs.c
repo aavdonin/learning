@@ -34,6 +34,8 @@ int get_dir_info(char *path, struct file_rec **records) {
         exit_failure("Directory read error");
     }
     struct file_rec *info = malloc(sizeof(struct file_rec) * num);
+    if (!info)
+        exit_failure("Memory allocation failure");
     for (i = 0; i < num; i++) {
         info[i] = get_rec(entry[i]->d_name);
         free(entry[i]);

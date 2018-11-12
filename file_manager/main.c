@@ -21,7 +21,7 @@ int main(void) {
     mvwprintw(win2,0,0,"Soon I'll become a file manager!\n");
     wrefresh(win2);
 
-    mvwprintw(win1,0,0,"Name       Size");
+    mvwprintw(win1,0,0,"Name       Size\n");
     wrefresh(win1);
 
     move(3,0);
@@ -29,9 +29,10 @@ int main(void) {
     int rec_num, i;
     rec_num = get_dir_info(".", &records);
     for (i=0;i<rec_num;i++) {
-        print_rec(records[i]);
-        printw("\n");
+        print_rec(win1, records[i]);
+        wprintw(win1,"\n");
     }
+    wrefresh(win1);
 
     refresh();
     getch();

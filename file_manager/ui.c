@@ -10,6 +10,6 @@ void exit_failure(char *message) {
     exit(1);
 }
 
-void print_rec(struct file_rec rec) {
-    printw("%c%-25s %.0ld", rec.type, rec.filename, rec.size);
+void print_rec(WINDOW *winptr, struct file_rec rec) {
+    wprintw(winptr, "%c%-25s %.0ld", rec.type, rec.filename, rec.size);
 }
