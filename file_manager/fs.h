@@ -1,10 +1,11 @@
 #ifndef _FS_H_
 #define _FS_H_
 #include <dirent.h>
+#include "defines.h"
 
 struct file_rec {
     char type;
-    char filename[255];
+    char filename[MAXFILE];
     long size;
 };
 

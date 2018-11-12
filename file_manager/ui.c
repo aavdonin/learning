@@ -13,7 +13,8 @@ void exit_failure(char *message) {
 void print_rec(WINDOW *winptr, struct file_rec rec) {
     int x, y;
     getmaxyx(winptr, y, x);
-    wprintw(winptr, "%c%-*s%*.0ld\n", rec.type, x*2/3-1, rec.filename, \
+    wprintw(winptr, "%c%-*.*s%*.0ld\n", rec.type, \
+    x*2/3-1, x*2/3-1, rec.filename, \
     x/3-1, rec.size);
 }
 
@@ -25,6 +26,7 @@ int rec_num) {
     for (i=0; (startpos+i < rec_num) && (i < y-1);i++) {
         print_rec(winptr, records[startpos+i]);
     }
+    wclrtobot(winptr);
     wrefresh(winptr);
 }
 

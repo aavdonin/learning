@@ -3,11 +3,22 @@
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "fs.h"
 #include "ui.h"
 
 int filter_func(const struct dirent *entry) {
-    return strcmp(entry->d_name,".");
+    if (strcmp(entry->d_name,".") == 0)
+        return 0;
+    else if (strcmp(entry->d_name,"..") == 0) {
+        char *path = getcwd(NULL,MAXPATH);
+        if (strcmp(path,"/") == 0) {
+            free(path);
+            return 0;
+        }
+        else return 1;
+    }
+    else return 1;
 }
 
 struct file_rec get_rec(char *filename) {
