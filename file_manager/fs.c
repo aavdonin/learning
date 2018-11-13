@@ -12,9 +12,9 @@ int filter_func(const struct dirent *entry) {
         return 0;
     else if (strcmp(entry->d_name,"..") == 0) {
         char *path = getcwd(NULL,MAXPATH);
-        if (strcmp(path,"/") == 0) {
-            free(path);
-            return 0;
+        if (strcmp(path,"/") == 0) { //root directory
+            free(path);              //should not have
+            return 0;                //".." record
         }
         else return 1;
     }

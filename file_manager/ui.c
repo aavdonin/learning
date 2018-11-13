@@ -6,6 +6,7 @@
 #include "ui.h"
 
 void exit_failure(char *message) {
+    //print *message and abort program
     clear();
     printw("%s", message);
     getch();
@@ -13,7 +14,8 @@ void exit_failure(char *message) {
     exit(1);
 }
 
-void print_rec(WINDOW *winptr, struct file_rec rec) { //print single record
+void print_rec(WINDOW *winptr, struct file_rec rec) {
+    //print single record
     int x, y;
     getmaxyx(winptr, y, x);
     wprintw(winptr, "%c%-*.*s%*.0ld\n", rec.type, \
@@ -22,6 +24,7 @@ void print_rec(WINDOW *winptr, struct file_rec rec) { //print single record
 }
 
 void print_list(struct panel *p) {
+    //print header and whole list of records
     int x,y,i;
     getmaxyx(p->win, y, x);
     mvwprintw(p->win,0,0," %-*s%-*s\n", x*2/3-1, "Name", x/3-1, "Size");
@@ -42,6 +45,7 @@ void init_panel(struct panel *p) {
 }
 
 void selection(WINDOW *winptr, int line, char enabled) {
+    //select or deselect specified line
     init_pair(1, COLOR_WHITE, COLOR_BLUE);
     mvwchgat(winptr, line, 0, -1, COLOR_PAIR(1), enabled, NULL);
     move(0,0);

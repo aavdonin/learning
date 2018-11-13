@@ -23,13 +23,12 @@ int main(void) {
     panels[1].win = derwin(borderwin2,LINES-2,COLS/2-2,1,1);
     init_panel(panels);
     init_panel(panels + 1);
-    char active = 0;
-    selection(panels[active].win, panels[active].selected, 1);
+    char active = 0;                    //0 - left, 1 - right
+    struct panel *p = panels + active;  //pointer to active panel
+    selection(p->win, p->selected, 1);
 
     int key;
-    struct panel *p;
     while ((key = getch()) != KEY_F(10)) {  //main cycle
-        p = panels + active;
         switch (key) {
             case KEY_UP:
                 move_up(p);
