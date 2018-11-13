@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "fs.h"
 #include "ui.h"
 
@@ -12,7 +13,7 @@ void exit_failure(char *message) {
     exit(1);
 }
 
-void print_rec(WINDOW *winptr, struct file_rec rec) {
+void print_rec(WINDOW *winptr, struct file_rec rec) { //print single record
     int x, y;
     getmaxyx(winptr, y, x);
     wprintw(winptr, "%c%-*.*s%*.0ld\n", rec.type, \
@@ -29,6 +30,15 @@ void print_list(struct panel *p) {
     }
     wclrtobot(p->win);
     wrefresh(p->win);
+}
+
+void init_panel(struct panel *p) {
+    p->records = NULL;
+    p->selected = 1;
+    p->startpos = 0;
+    p->rec_num = get_dir_info(".", &(p->records));
+    print_list(p);
+    getcwd(p->path,MAXPATH);
 }
 
 void selection(WINDOW *winptr, int line, char enabled) {
@@ -68,11 +78,65 @@ void move_down(struct panel *p) {
     }
 }
 
+void page_up(struct panel *p) {
+    int x,y;
+    getmaxyx(p->win, y, x); y--;
+    if (p->startpos == 0) {
+        selection(p->win, p->selected, 0);
+        p->selected = 1;
+    }
+    else {
+        p->startpos -= y;
+        if (p->startpos < 0) {
+            p->startpos = 0;
+            p->selected = 1;
+        }
+        print_list(p);
+    }
+    selection(p->win, p->selected, 1);
+}
+
+void page_down(struct panel *p) {
+    int x,y;
+    getmaxyx(p->win, y, x); y--;
+    if ((p->rec_num - p->startpos) <= y) {
+        selection(p->win, p->selected, 0);
+        p->selected = p->rec_num - p->startpos;
+    }
+    else {
+        p->startpos += y;
+        print_list(p);
+        if (p->selected > (p->rec_num - p->startpos))
+            p->selected = p->rec_num - p->startpos;
+    }
+    selection(p->win, p->selected, 1);
+}
+
+void move_home(struct panel *p) {
+    p->startpos = 0;
+    p->selected = 1;
+    print_list(p);
+    selection(p->win, p->selected, 1);
+}
+
+void move_end(struct panel *p) {
+    int x,y;
+    getmaxyx(p->win, y, x); y--;
+    if ((p->rec_num > y) && (p->startpos + y <= p->rec_num)) {
+        p->startpos = p->rec_num - y;
+        p->selected = y;
+        print_list(p);
+        selection(p->win, p->selected, 1);
+    }
+    else
+        page_down(p);
+}
+
 void enter_dir(struct panel *p) {
     if (p->records[p->startpos + p->selected - 1].type == '/') {
         strcat(p->path,"/");
-        strcat(p->path, \
-        p->records[p->startpos + p->selected - 1].filename);
+        int selected = p->startpos + p->selected - 1;
+        strcat(p->path, p->records[selected].filename);
         chdir(p->path);
         p->rec_num = get_dir_info(".", &(p->records));
         p->startpos = 0;
