@@ -15,7 +15,9 @@ struct panel {
 };
 void exit_failure(char *message);
 void print_rec(WINDOW *winptr, struct file_rec rec);
-void print_list(WINDOW *winptr, struct file_rec *records, int startpos, \
-int rec_num);
+void print_list(struct panel *p);
 void selection(WINDOW *winptr, int line, char enabled);
+void move_up(struct panel *p);
+void move_down(struct panel *p);
+void enter_dir(struct panel *p);
 #endif
