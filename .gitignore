@@ -1,3 +1,5 @@
 *.o
 a.out
 *.so
+editor
+fileman

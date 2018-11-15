@@ -1,20 +1,39 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "defines.h"
 
 FILE *file;
 char filename[FILENAME_MAX_LEN];
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    if (argc == 2) {        //handle given arguments first
+        strcpy(filename, argv[1]);
+        file = fopen(argv[1], "r");
+        if (!file) {
+            fprintf(stderr,"Unable to open file <%s>\n", argv[1]);
+            exit(1);
+        }
+    }
+    else if (argc > 2) {
+        fprintf(stderr,"Too much arguments given!\n");
+        fprintf(stderr,"Usage: %s [file]\n", argv[0]);
+        exit(1);
+    }
     int menu_item = -1;
     char *buf;              //buffer to hold file contents
     long bufsize, bufused;  //buffer size and count of bytes used
     long startpos = 0;      //position to start file displaying from
+    if (file) bufsize = load_text(file, &buf, &bufused); //load file if opened
     initscr();
     noecho();
     cbreak();
     keypad(stdscr, TRUE);
+    if (argc == 2) {        //if opened with command line argument
+                            //goto edit mode immediately
+        edit_mode(&buf,&startpos, &bufused, &bufsize);
+    }
     if (!has_colors()) {
         endwin();
         printf("There's no colors here :(\n");
