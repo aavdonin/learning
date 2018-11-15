@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdio.h>
 #include "fs.h"
 #include "ui.h"
 
@@ -147,5 +150,21 @@ void enter_dir(struct panel *p) {
         print_list(p);
         selection(p->win, p->selected, 0);
         selection(p->win, p->selected = 1, 1);
+    }
+    else {  //open file in text editor
+        pid_t pid;
+        switch (pid = fork()) {
+        case -1:
+            exit_failure("Error occured while forking process\n");
+            break;
+        case 0:
+            ;int selected = p->startpos + p->selected - 1;
+            execl("../text_editor/editor", "editor", \
+            p->records[selected].filename, NULL);
+            break;
+        default:
+            wait(NULL);
+            break;
+        }
     }
 }
