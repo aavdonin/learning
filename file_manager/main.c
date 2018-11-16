@@ -4,28 +4,10 @@
 #include "defines.h"
 
 int main(void) {
-    initscr();
-    start_color();
-    refresh();
-    noecho();
-    keypad(stdscr, TRUE);
-    curs_set(0);
-
-    WINDOW *borderwin1, *borderwin2;    //draw borders
-    borderwin1 = newwin(LINES,COLS/2,0,0);
-    borderwin2 = newwin(LINES,COLS/2,0,COLS/2);
-    box(borderwin1,0,0);
-    box(borderwin2,0,0);
-    wrefresh(borderwin1);
-    wrefresh(borderwin2);
-    struct panel panels[2];   //structure array for side panels
-    panels[0].win = derwin(borderwin1,LINES-2,COLS/2-2,1,1);
-    panels[1].win = derwin(borderwin2,LINES-2,COLS/2-2,1,1);
-    init_panel(panels);
-    init_panel(panels + 1);
     char active = 0;                    //0 - left, 1 - right
-    struct panel *p = panels + active;  //pointer to active panel
-    selection(p->win, p->selected, 1);
+    struct panel *p = NULL;  //pointer to active panel
+    init_screen(&p, active);
+    struct panel *p1 = p - active; //pointer to left panel
 
     int key;
     while ((key = getch()) != KEY_F(10)) {  //main cycle
@@ -55,12 +37,15 @@ int main(void) {
                 move_end(p);
                 break;
             case '\n':  //KEY_ENTER
-                enter_dir(p);
+                if (p->records[p->startpos + p->selected - 1].type == '/')
+                    enter_dir(p);
+                else
+                    launch_editor(&p, active);
                 break;
             case '\t':   //KEY_TAB
                 active ^= 1; //invert value (0/1)
                 selection(p->win, p->selected, 0); //deselect here
-                p = panels + active;
+                p = p1 + active;
                 selection(p->win, p->selected, 1); //and select there
                 break;
         }

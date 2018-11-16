@@ -43,7 +43,6 @@ void init_panel(struct panel *p) {
     p->selected = 1;
     p->startpos = 0;
     p->rec_num = get_dir_info(".", &(p->records));
-    print_list(p);
     getcwd(p->path,MAXPATH);
 }
 
@@ -140,31 +139,68 @@ void move_end(struct panel *p) {
 }
 
 void enter_dir(struct panel *p) {
-    if (p->records[p->startpos + p->selected - 1].type == '/') {
-        strcat(p->path,"/");
-        int selected = p->startpos + p->selected - 1;
-        strcat(p->path, p->records[selected].filename);
-        chdir(p->path);
-        p->rec_num = get_dir_info(".", &(p->records));
-        p->startpos = 0;
-        print_list(p);
-        selection(p->win, p->selected, 0);
-        selection(p->win, p->selected = 1, 1);
+    strcat(p->path,"/");
+    int selected = p->startpos + p->selected - 1;
+    strcat(p->path, p->records[selected].filename);
+    chdir(p->path);
+    p->rec_num = get_dir_info(".", &(p->records));
+    p->startpos = 0;
+    print_list(p);
+    selection(p->win, p->selected, 0);
+    selection(p->win, p->selected = 1, 1);
+}
+
+void launch_editor(struct panel **p, char active) {  //open file in text editor
+    pid_t pid;
+    //endwin();
+    switch (pid = fork()) {
+    case -1:
+        exit_failure("Error occured while forking process\n");
+        break;
+    case 0:
+        ;int selected = (*p)->startpos + (*p)->selected - 1;
+        execl("../text_editor/editor", "editor", \
+        (*p)->records[selected].filename, NULL);
+        break;
+    default:
+        wait(NULL);
+        init_screen(p, active);
+        break;
     }
-    else {  //open file in text editor
-        pid_t pid;
-        switch (pid = fork()) {
-        case -1:
-            exit_failure("Error occured while forking process\n");
-            break;
-        case 0:
-            ;int selected = p->startpos + p->selected - 1;
-            execl("../text_editor/editor", "editor", \
-            p->records[selected].filename, NULL);
-            break;
-        default:
-            wait(NULL);
-            break;
-        }
+}
+
+void init_screen(struct panel **p, char active) {
+    initscr();
+    clear();
+    start_color();
+    refresh();
+    noecho();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+
+    WINDOW *borderwin1, *borderwin2;    //draw borders
+    borderwin1 = newwin(LINES,COLS/2,0,0);
+    borderwin2 = newwin(LINES,COLS/2,0,COLS/2);
+    box(borderwin1,0,0);
+    box(borderwin2,0,0);
+    wrefresh(borderwin1);
+    wrefresh(borderwin2);
+    //structure array for side panels:
+    struct panel *panels;
+    if (!*p) {
+        panels = malloc(sizeof(struct panel) * 2);
+        *p = panels + active;
+        if (!panels)
+            exit_failure("Memory allocation failure");
+        init_panel(panels);
+        init_panel(panels + 1);
     }
+    else {
+        panels = (*p) - active;
+    }
+    panels[0].win = derwin(borderwin1,LINES-2,COLS/2-2,1,1);
+    panels[1].win = derwin(borderwin2,LINES-2,COLS/2-2,1,1);
+    print_list(&panels[0]);
+    print_list(&panels[1]);
+    selection((*p)->win, (*p)->selected, 1);
 }

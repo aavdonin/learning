@@ -25,4 +25,6 @@ void page_down(struct panel *p);
 void move_home(struct panel *p);
 void move_end(struct panel *p);
 void enter_dir(struct panel *p);
+void init_screen(struct panel **p, char active);
+void launch_editor(struct panel **p, char active);
 #endif
