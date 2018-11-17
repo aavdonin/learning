@@ -170,6 +170,26 @@ void launch_editor(struct panel **p, char active, char editor_path[MAXPATH]) {
     }
 }
 
+void launch_binary(struct panel **p, char active) {
+    //launch specified binary
+    pid_t pid;
+    int selected = (*p)->startpos + (*p)->selected - 1;
+    char *filename = (*p)->records[selected].filename;
+    endwin();
+    switch (pid = fork()) {
+    case -1:
+        exit_failure("Cannot make new process\n");
+        break;
+    case 0:
+        execl(filename, filename, NULL);
+        exit_failure("Cannot execute binary\n");
+    default:
+        wait(NULL);
+        init_screen(p, active);
+        break;
+    }
+}
+
 void init_screen(struct panel **p, char active) {
     initscr();
     clear();

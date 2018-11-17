@@ -27,4 +27,5 @@ void move_end(struct panel *p);
 void enter_dir(struct panel *p);
 void init_screen(struct panel **p, char active);
 void launch_editor(struct panel **p, char active, char editor_path[]);
+void launch_binary(struct panel **p, char active);
 #endif

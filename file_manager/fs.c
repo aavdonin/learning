@@ -32,6 +32,8 @@ struct file_rec get_rec(char *filename) {
         record.type = '/';
         record.size = 0;
     }
+    else if (buffer.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))
+        record.type = '*';
     else
         record.type = ' ';
     return record;

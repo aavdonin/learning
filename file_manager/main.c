@@ -44,6 +44,8 @@ int main(void) {
             case '\n':  //KEY_ENTER
                 if (p->records[p->startpos + p->selected - 1].type == '/')
                     enter_dir(p);
+                else if (p->records[p->startpos + p->selected - 1].type == '*')
+                    launch_binary(&p, active);
                 else
                     launch_editor(&p, active, editor_path);
                 break;
