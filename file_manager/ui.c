@@ -152,16 +152,17 @@ void enter_dir(struct panel *p) {
 
 void launch_editor(struct panel **p, char active) {  //open file in text editor
     pid_t pid;
-    //endwin();
+    int selected = (*p)->startpos + (*p)->selected - 1;
+    char *filename = (*p)->records[selected].filename;
+    char *editor_path = "/home/le_hash/prog/learning/text_editor/editor";
+    endwin();
     switch (pid = fork()) {
     case -1:
-        exit_failure("Error occured while forking process\n");
+        exit_failure("Cannot make new process\n");
         break;
     case 0:
-        ;int selected = (*p)->startpos + (*p)->selected - 1;
-        execl("../text_editor/editor", "editor", \
-        (*p)->records[selected].filename, NULL);
-        break;
+        execl(editor_path, "editor", filename, NULL);
+        exit_failure("Cannot load editor binary\n");
     default:
         wait(NULL);
         init_screen(p, active);

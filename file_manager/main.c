@@ -1,4 +1,5 @@
 #include <ncurses.h>
+#include <unistd.h>
 #include "fs.h"
 #include "ui.h"
 #include "defines.h"
@@ -46,6 +47,7 @@ int main(void) {
                 active ^= 1; //invert value (0/1)
                 selection(p->win, p->selected, 0); //deselect here
                 p = p1 + active;
+                chdir(p->path);
                 selection(p->win, p->selected, 1); //and select there
                 break;
         }
