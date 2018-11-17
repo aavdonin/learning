@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include <string.h>
 #include "fs.h"
 #include "ui.h"
 #include "defines.h"
@@ -9,6 +10,9 @@ int main(void) {
     struct panel *p = NULL;  //pointer to active panel
     init_screen(&p, active);
     struct panel *p1 = p - active; //pointer to left panel
+    char editor_path[MAXPATH];
+    getcwd(editor_path,MAXPATH);
+    strcat(editor_path,"/../text_editor/editor");
 
     int key;
     while ((key = getch()) != KEY_F(10)) {  //main cycle
@@ -41,7 +45,7 @@ int main(void) {
                 if (p->records[p->startpos + p->selected - 1].type == '/')
                     enter_dir(p);
                 else
-                    launch_editor(&p, active);
+                    launch_editor(&p, active, editor_path);
                 break;
             case '\t':   //KEY_TAB
                 active ^= 1; //invert value (0/1)

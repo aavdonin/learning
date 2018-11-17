@@ -150,11 +150,11 @@ void enter_dir(struct panel *p) {
     selection(p->win, p->selected = 1, 1);
 }
 
-void launch_editor(struct panel **p, char active) {  //open file in text editor
+void launch_editor(struct panel **p, char active, char editor_path[MAXPATH]) {
+    //open file in text editor
     pid_t pid;
     int selected = (*p)->startpos + (*p)->selected - 1;
     char *filename = (*p)->records[selected].filename;
-    char *editor_path = "/home/le_hash/prog/learning/text_editor/editor";
     endwin();
     switch (pid = fork()) {
     case -1:
