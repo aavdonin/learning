@@ -29,4 +29,5 @@ void init_screen(struct panel **p, char active);
 void launch_editor(struct panel **p, char active, char editor_path[]);
 void launch_binary(struct panel **p, char active);
 void copy_file(struct panel **p, char active);
+void *copy_progress(void *);
 #endif

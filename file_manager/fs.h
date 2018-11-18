@@ -17,5 +17,5 @@ typedef struct {
 int filter_func(const struct dirent *entry);
 struct file_rec get_rec(char *filename);
 int get_dir_info(char *path, struct file_rec **records);
-void* copy(void *);
+void *copy(void *);
 #endif

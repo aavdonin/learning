@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 #include "fs.h"
 #include "ui.h"
 
@@ -60,14 +61,18 @@ int get_dir_info(char *path, struct file_rec **records) {
     return num;
 }
 
-#include <stdio.h>
-#include <pthread.h>
-void* copy(void *args) {
+void *copy(void *args) {
     //copies the file src to dest in separate thread
-    //starts it's own child thread to show status
     cp_args *arg = (cp_args *)args;
-    printf("from: %s\nto: %s", arg->from, arg->to);
-    getchar();
+    FILE *from, *to;
+    from = fopen(arg->from, "r");
+    to = fopen(arg->to, "w");
+    char c;
+    while ((c = fgetc(from)) != EOF) {
+        fprintf(to, "%c", c);
+    }
+    fclose(from);
+    fclose(to);
     int *result = malloc(sizeof(int));
     *result = 0;
     return (void *) result;

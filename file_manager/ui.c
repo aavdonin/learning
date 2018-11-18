@@ -230,7 +230,7 @@ void init_screen(struct panel **p, char active) {
 
 void copy_file(struct panel **p, char active) {
     int status, *cp_result;
-    pthread_t cp_thrd;
+    pthread_t cp_thrd, progress_thrd;
     pthread_attr_t attr;
     cp_args arg;
     struct panel *p_from, *p_to;
@@ -241,20 +241,32 @@ void copy_file(struct panel **p, char active) {
     int selected = p_from->startpos + p_from->selected - 1;
     strcat(arg.from, p_from->records[selected].filename);
     strcpy(arg.to, p_to->path);
+    strcat(arg.to, "/");
+    strcat(arg.to, p_from->records[selected].filename);
+
+    if (p_from->records[selected].type == '/') //do not copy directories
+        return;
+
     if (pthread_attr_init(&attr) != 0 ) {
         exit_failure("Unable to initialize thread attributes\n");
     }
     status = pthread_create(&cp_thrd, &attr, copy, &arg);
     if (status != 0) {
-        exit_failure("Unable to create thread!\n");
+        exit_failure("Unable to create 'copy' thread!\n");
+    }
+    status = pthread_create(&progress_thrd, &attr, copy_progress, &arg);
+    if (status != 0) {
+        exit_failure("Unable to create 'copy_progress' thread!\n");
     }
     status = pthread_join(cp_thrd, (void **) &cp_result);
     if (status != 0) {
-        exit_failure("Join thread error\n");
+        exit_failure("Join 'copy' thread error\n");
     }
     if (*cp_result != 0) {
         exit_failure("File copy failed\n");
     }
+    free(cp_result);
+    pthread_join(progress_thrd, (void **) &cp_result);
     free(cp_result);
     endwin();
     init_screen(p, active);
@@ -262,4 +274,38 @@ void copy_file(struct panel **p, char active) {
     p_to->rec_num = get_dir_info(p_to->path, &(p_to->records));
     chdir(p_from->path);
     print_list(p_to);
+}
+
+void *copy_progress(void *args) {
+    //shows percentage of copying progress
+    cp_args *arg = (cp_args *)args;
+    WINDOW *progress_win = newwin(7,19,(LINES-7)/2,(COLS-19)/2);
+    init_pair(1, COLOR_WHITE, COLOR_BLUE);
+    init_pair(2, COLOR_WHITE, COLOR_WHITE);
+    init_pair(3, COLOR_BLACK, COLOR_BLACK);
+    wbkgd(progress_win,COLOR_PAIR(1));
+    box(progress_win,0,0);
+    mvwprintw(progress_win,2,2,"Copying file...");
+    wrefresh(progress_win);
+    char ratio = 0;
+    while (1) {
+        struct file_rec src, dest;
+        src  = get_rec(arg->from);
+        dest = get_rec(arg->to);
+        ratio = (char) 100 * ((float) dest.size / src.size);
+        int black = ratio / 10;
+        int white = 10 - black;
+        wattron(progress_win,COLOR_PAIR(3));
+        mvwprintw(progress_win,4,2,"%*s",black," ");
+        wattron(progress_win,COLOR_PAIR(2));
+        wprintw(progress_win,"%*s",white," ");
+        wattron(progress_win,COLOR_PAIR(1));
+        wprintw(progress_win," %3d\%",ratio);
+        wrefresh(progress_win);
+        if (src.size <= dest.size) break;
+    }
+
+    int *result = malloc(sizeof(int));
+    *result = 0;
+    return (void *) result;
 }
