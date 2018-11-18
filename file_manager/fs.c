@@ -67,7 +67,7 @@ void *copy(void *args) {
     FILE *from, *to;
     from = fopen(arg->from, "r");
     to = fopen(arg->to, "w");
-    char c;
+    int c;
     while ((c = fgetc(from)) != EOF) {
         fprintf(to, "%c", c);
     }
