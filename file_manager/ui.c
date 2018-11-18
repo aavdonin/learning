@@ -300,7 +300,7 @@ void *copy_progress(void *args) {
         wattron(progress_win,COLOR_PAIR(2));
         wprintw(progress_win,"%*s",white," ");
         wattron(progress_win,COLOR_PAIR(1));
-        wprintw(progress_win," %3d\%",ratio);
+        wprintw(progress_win,"%3d%%",ratio);
         wrefresh(progress_win);
         if (src.size <= dest.size) break;
     }
