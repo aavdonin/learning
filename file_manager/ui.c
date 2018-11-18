@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "fs.h"
 #include "ui.h"
 
@@ -143,6 +144,7 @@ void enter_dir(struct panel *p) {
     int selected = p->startpos + p->selected - 1;
     strcat(p->path, p->records[selected].filename);
     chdir(p->path);
+    getcwd(p->path,MAXPATH);
     p->rec_num = get_dir_info(".", &(p->records));
     p->startpos = 0;
     print_list(p);
@@ -224,4 +226,40 @@ void init_screen(struct panel **p, char active) {
     print_list(&panels[0]);
     print_list(&panels[1]);
     selection((*p)->win, (*p)->selected, 1);
+}
+
+void copy_file(struct panel **p, char active) {
+    int status, *cp_result;
+    pthread_t cp_thrd;
+    pthread_attr_t attr;
+    cp_args arg;
+    struct panel *p_from, *p_to;
+    p_from = *p;
+    p_to = *p + (active ? -1 : 1);
+    strcpy(arg.from, p_from->path);
+    strcat(arg.from, "/");
+    int selected = p_from->startpos + p_from->selected - 1;
+    strcat(arg.from, p_from->records[selected].filename);
+    strcpy(arg.to, p_to->path);
+    if (pthread_attr_init(&attr) != 0 ) {
+        exit_failure("Unable to initialize thread attributes\n");
+    }
+    status = pthread_create(&cp_thrd, &attr, copy, &arg);
+    if (status != 0) {
+        exit_failure("Unable to create thread!\n");
+    }
+    status = pthread_join(cp_thrd, (void **) &cp_result);
+    if (status != 0) {
+        exit_failure("Join thread error\n");
+    }
+    if (*cp_result != 0) {
+        exit_failure("File copy failed\n");
+    }
+    free(cp_result);
+    endwin();
+    init_screen(p, active);
+    chdir(p_to->path);
+    p_to->rec_num = get_dir_info(p_to->path, &(p_to->records));
+    chdir(p_from->path);
+    print_list(p_to);
 }

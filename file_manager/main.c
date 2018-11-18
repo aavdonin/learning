@@ -56,6 +56,9 @@ int main(void) {
                 chdir(p->path);
                 selection(p->win, p->selected, 1); //and select there
                 break;
+            case KEY_F(5):
+                copy_file(&p, active);
+                break;
         }
     }
         

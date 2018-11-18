@@ -59,3 +59,16 @@ int get_dir_info(char *path, struct file_rec **records) {
     *records = info;
     return num;
 }
+
+#include <stdio.h>
+#include <pthread.h>
+void* copy(void *args) {
+    //copies the file src to dest in separate thread
+    //starts it's own child thread to show status
+    cp_args *arg = (cp_args *)args;
+    printf("from: %s\nto: %s", arg->from, arg->to);
+    getchar();
+    int *result = malloc(sizeof(int));
+    *result = 0;
+    return (void *) result;
+}
