@@ -49,7 +49,7 @@ int get_dir_info(char *path, struct file_rec **records) {
     }
     struct file_rec *info = malloc(sizeof(struct file_rec) * num);
     if (!info)
-        exit_failure("Memory allocation failure");
+        exit_failure("Memory allocation failure\n");
     for (i = 0; i < num; i++) {
         info[i] = get_rec(entry[i]->d_name);
         free(entry[i]);
@@ -66,7 +66,11 @@ void *copy(void *args) {
     cp_args *arg = (cp_args *)args;
     FILE *from, *to;
     from = fopen(arg->from, "r");
+    if (!from)
+        exit_failure("Source file read error\n");
     to = fopen(arg->to, "w");
+    if (!to)
+        exit_failure("Dest file write error\n");
     int c;
     while ((c = fgetc(from)) != EOF) {
         fprintf(to, "%c", c);

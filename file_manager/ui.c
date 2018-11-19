@@ -295,12 +295,16 @@ void *copy_progress(void *args) {
         ratio = (char) 100 * ((float) dest.size / src.size);
         int black = ratio / 10;
         int white = 10 - black;
-        wattron(progress_win,COLOR_PAIR(3));
-        mvwprintw(progress_win,4,2,"%*s",black," ");
+        if (black > 0) {
+            wattron(progress_win,COLOR_PAIR(3));
+            mvwprintw(progress_win,4,2,"%*s",black," ");
+        }
+        else
+            wmove(progress_win,4,2);
         wattron(progress_win,COLOR_PAIR(2));
         wprintw(progress_win,"%*s",white," ");
         wattron(progress_win,COLOR_PAIR(1));
-        wprintw(progress_win,"%3d%%",ratio);
+        mvwprintw(progress_win,4,13,"%3d%%",ratio);
         wrefresh(progress_win);
         if (src.size <= dest.size) break;
     }
