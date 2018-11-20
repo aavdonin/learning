@@ -20,7 +20,7 @@ static pthread_mutex_t mutex[STORES_CNT];
 void *loader_job(void *args) {
     printf("Loader woke up\n");
     while (1) {
-        int chosen_store = rand()%5;
+        int chosen_store = rand()%STORES_CNT;
         int mst; //mutex status
         if ((mst = pthread_mutex_trylock(&mutex[chosen_store])) == EBUSY) {
             printf("Loader wanted to put some goods in Store %d, " \
@@ -33,12 +33,11 @@ void *loader_job(void *args) {
         }
         int load = 300 + rand()%200;
         store[chosen_store] += load;
-        printf("Loader put %d goods into Store %d. ", load, chosen_store+1);
-        printf("He is tired and wants to sleep\n");
+        printf("Loader put %d goods into Store %d.\n", load, chosen_store+1);
         printf("Store %d now has %d goods\n", \
         chosen_store+1, store[chosen_store]);
-        pthread_mutex_unlock(&mutex[chosen_store]);
         sleep(1);
+        pthread_mutex_unlock(&mutex[chosen_store]);
     }
 }
 
@@ -46,7 +45,7 @@ void *buyer_job(void *args) {
     buyer *me = (buyer*) args; //who am i?
     int mst; //mutex status
     while (me->need > 0) {
-        int chosen_store = rand()%5;
+        int chosen_store = rand()%STORES_CNT;
         if ((mst = pthread_mutex_trylock(&mutex[chosen_store])) == EBUSY) {
             printf("Buyer %d went to Store %d, but it's occupied\n", \
             me->id, chosen_store+1);
@@ -71,6 +70,7 @@ void *buyer_job(void *args) {
             pthread_mutex_unlock(&mutex[chosen_store]);
             break;
         }
+        sleep(1);
         pthread_mutex_unlock(&mutex[chosen_store]);
         sleep(3);
     }
@@ -88,7 +88,7 @@ int main() {
     for (i=0; i<BUYERS_CNT; i++) { //initialization of buyers needs
         buyers[i].id = i+1;
         buyers[i].need = 3000 + rand()%500;
-        printf("Buyer %d wants to buy %d goods\n", buyers[i].id, buyers[i].need);
+        printf("Buyer %d wants to buy %d goods\n",buyers[i].id, buyers[i].need);
     }
     printf("\nOkay, let's go...\n\n");
     
