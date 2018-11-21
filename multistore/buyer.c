@@ -8,7 +8,7 @@ void *buyer_job(void *args) {
     buyer *me = (buyer*) args; //who am i?
     int mst; //mutex status
     while (me->need > 0) {
-        int chosen_store = rand()%5;
+        int chosen_store = rand()%STORES_CNT;
         if ((mst = pthread_mutex_trylock(&mutex[chosen_store])) == EBUSY) {
             printf("Buyer %d went to Store %d, but it's occupied\n", \
             me->id, chosen_store+1);
@@ -33,6 +33,7 @@ void *buyer_job(void *args) {
             pthread_mutex_unlock(&mutex[chosen_store]);
             break;
         }
+        sleep(1);
         pthread_mutex_unlock(&mutex[chosen_store]);
         sleep(3);
     }

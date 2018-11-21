@@ -23,7 +23,7 @@ int main() {
     for (i=0; i<BUYERS_CNT; i++) { //initialization of buyers needs
         buyers[i].id = i+1;
         buyers[i].need = 3000 + rand()%500;
-        printf("Buyer %d wants to buy %d goods\n", buyers[i].id, buyers[i].need);
+        printf("Buyer %d wants to buy %d goods\n",buyers[i].id, buyers[i].need);
     }
     printf("\nOkay, let's go...\n\n");
     
