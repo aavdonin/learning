@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "defines.h"
 
-void check_malloc(void *ptr) {
+static void check_malloc(void *ptr) {
     if (ptr == NULL) {
         fprintf(stderr,"Memory allocation failure");
         exit(1);
@@ -13,7 +13,7 @@ void check_malloc(void *ptr) {
 char** parse_cmd(char *cmd) {
     //function to parse given string with strtok to a set of substrings
     //allocates memory for substrings array and returns pointer to it
-    const char delim[2] = " ";
+    const char delim[3] = " \n";
     char **token_arr = malloc(sizeof(char *) * MAX_TOKENS);
     check_malloc(token_arr);
     char *token;
