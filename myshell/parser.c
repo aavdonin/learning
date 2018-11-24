@@ -20,6 +20,9 @@ char** parse_cmd(char *cmd) {
     token = strtok(cmd, delim);
     int i = 0;
     while (token != NULL) {
+        //insert NULL before "|" token
+        if (strcmp(token, "|") == 0)
+            token_arr[i++] = NULL;
         //add token to array
         token_arr[i] = malloc(strlen(token));
         check_malloc(token_arr[i]);
