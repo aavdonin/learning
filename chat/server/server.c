@@ -44,13 +44,14 @@ int main() {
                 char pipefilename[MAXFILENAMELEN];
                 sprintf(pipefilename, "client_%d.pipe", clients[i]);
                 int outpipe;
-                if ((outpipe = open(pipefilename, O_WRONLY)) <= 0) {
+                if ((outpipe = open(pipefilename, O_WRONLY|O_NONBLOCK)) <= 0) {
                     perror(pipefilename);
                 }
                 if (write(outpipe, msg, len) <=0) {
                     perror("Error writing to client.pipe");
                     del(clients, i);
                 }
+                close(outpipe);
                 //receive sigpipe and unregister client
             }
             printf("Incomming message (%d): <%s>\n", len, msg);
