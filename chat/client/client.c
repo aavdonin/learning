@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -33,6 +34,7 @@ int main(void) {
         }
     }
     if ((inpipe = open(pipefilename, O_RDONLY|O_NDELAY)) <= 0) {
+        endwin();
         perror("Can't open client_%.pipe");
         return 1;
     }
@@ -58,5 +60,4 @@ int main(void) {
     getch();
     endwin();
     remove(pipefilename);
-
 }

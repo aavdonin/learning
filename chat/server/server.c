@@ -2,13 +2,15 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
 #include "../defines.h"
-
+#include "array_fnc.h"
 
 int main() {
     int inpipe;
-    int client_pids[MAXCLIENTS];
+    int *clients = NULL;
     if (mkfifo("server.pipe", 0777)) {
         if (errno != EEXIST) {
             perror("mkfifo");
@@ -30,11 +32,27 @@ int main() {
                 strcpy(client_pid, msg+9);
                 printf("Client with pid <%s> connected\n", client_pid);
                 //add client pid to array
+                clients = append(clients, atoi(client_pid));
                 //send message about new client
                 continue;
             }
             //send received message to all registered clients
-            //receive sigpipe and unregister client
+            int i;
+            int client_cnt = arrlen(clients);
+            for (i = client_cnt-1; i >= 0; i--) {
+                if (clients[i] <= 0) continue;
+                char pipefilename[MAXFILENAMELEN];
+                sprintf(pipefilename, "client_%d.pipe", clients[i]);
+                int outpipe;
+                if ((outpipe = open(pipefilename, O_WRONLY)) <= 0) {
+                    perror(pipefilename);
+                }
+                if (write(outpipe, msg, len) <=0) {
+                    perror("Error writing to client.pipe");
+                    del(clients, i);
+                }
+                //receive sigpipe and unregister client
+            }
             printf("Incomming message (%d): <%s>\n", len, msg);
         }
     }
