@@ -19,7 +19,7 @@ array_fnc.o: server/array_fnc.c
 	gcc -c server/array_fnc.c -o server/array_fnc.o
 
 clean:
-	rm -rf bin */*.o *.pipe
+	rm -rf bin */*.o
 
 folders:
 	mkdir -p bin

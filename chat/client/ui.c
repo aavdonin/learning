@@ -1,30 +1,35 @@
 #include <ncurses.h>
 #include <unistd.h>
-#include <time.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../defines.h"
 
 extern WINDOW *chat, *input;
 
 void *listenmsg(void *arg) {
-    int *inpipe = (int*) arg;
+    int *qid = (int*) arg;
+    pid_t pid = getpid();
     int x, y, curs_x, curs_y;
     getmaxyx(chat,y,x);
     getyx(input, curs_y, curs_x);
     int len;
-    char msg[MSGSIZE];
+    message msg;
     while (1) {
-        if ((len = read(*inpipe, msg, MSGSIZE)) > 0) {
-            msg[len] = '\0';
-            mvwprintw(chat, y-1, x-1, "\n%s", msg);
+        memset(msg.mtext,0,MSGSIZE);
+        if (msgrcv(*qid, &msg, MSGSIZE, pid, 0 ) < 0) {
+            endwin();
+            perror("msgrcv");
+            exit(1);
+        }
+        else {
+            mvwprintw(chat, y-1, x-1, "\n%s", msg.mtext);
             wmove(input, curs_y, curs_x);
             wrefresh(chat);
             wrefresh(input);
-        }
-        else {
-            struct timespec delay;
-            delay.tv_sec = 0;
-            delay.tv_nsec = 100000000L; //0.1sec
-            nanosleep(&delay,NULL);
         }
     }
 }
