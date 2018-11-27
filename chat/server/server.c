@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+#include <time.h>
 #include "../defines.h"
 #include "array_fnc.h"
 
@@ -42,6 +43,12 @@ int main(void) {
             }
             //send received message to all registered clients
             send_msg(clients, msg);
+        }
+        else {
+            struct timespec delay;
+            delay.tv_sec = 0;
+            delay.tv_nsec = 100000000L; //0.1sec
+            nanosleep(&delay,NULL);
         }
     }
 }

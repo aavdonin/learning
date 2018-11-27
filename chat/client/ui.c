@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include <time.h>
 #include "../defines.h"
 
 extern WINDOW *chat, *input;
@@ -18,6 +19,12 @@ void *listenmsg(void *arg) {
             wmove(input, curs_y, curs_x);
             wrefresh(chat);
             wrefresh(input);
+        }
+        else {
+            struct timespec delay;
+            delay.tv_sec = 0;
+            delay.tv_nsec = 100000000L; //0.1sec
+            nanosleep(&delay,NULL);
         }
     }
 }
