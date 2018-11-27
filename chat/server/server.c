@@ -8,7 +8,9 @@
 #include "../defines.h"
 #include "array_fnc.h"
 
-int main() {
+void send_msg(int *clients, char *msg);
+
+int main(void) {
     int inpipe;
     int *clients = NULL;
     if (mkfifo("server.pipe", 0777)) {
@@ -34,27 +36,29 @@ int main() {
                 //add client pid to array
                 clients = append(clients, atoi(client_pid));
                 //send message about new client
+                sprintf(msg, "Client %s joined us!", client_pid);
+                send_msg(clients, msg);
                 continue;
             }
             //send received message to all registered clients
-            int i;
-            int client_cnt = arrlen(clients);
-            for (i = client_cnt-1; i >= 0; i--) {
-                if (clients[i] <= 0) continue;
-                char pipefilename[MAXFILENAMELEN];
-                sprintf(pipefilename, "client_%d.pipe", clients[i]);
-                int outpipe;
-                if ((outpipe = open(pipefilename, O_WRONLY|O_NONBLOCK)) <= 0) {
-                    perror(pipefilename);
-                }
-                if (write(outpipe, msg, len) <=0) {
-                    perror("Error writing to client.pipe");
-                    del(clients, i);
-                }
-                close(outpipe);
-                //receive sigpipe and unregister client
-            }
-            printf("Incomming message (%d): <%s>\n", len, msg);
+            send_msg(clients, msg);
         }
+    }
+}
+
+void send_msg(int *clients, char *msg) {
+    int i;
+    for (i = arrlen(clients)-1; i >= 0; i--) { //reverse order for unreg possibility
+        char pipefilename[MAXFILENAMELEN];
+        sprintf(pipefilename, "client_%d.pipe", clients[i]);
+        int outpipe;
+        if ((outpipe = open(pipefilename, O_WRONLY|O_NONBLOCK)) <= 0) {
+            perror(pipefilename);
+        }
+        if (write(outpipe, msg, strlen(msg)) <=0) {
+            //perror("Error writing to client.pipe");
+            del(clients, i); //unregister client
+        }
+        close(outpipe);
     }
 }

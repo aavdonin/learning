@@ -12,7 +12,12 @@
 
 WINDOW *chat, *input;
 
-int main(void) {
+int main(int argc, char *argv[]) {
+    if (argc > 2) {
+        fprintf(stderr,"Too much arguments given!\n");
+        fprintf(stderr,"Usage: %s [nickname]\n", argv[0]);
+        return 1;
+    }
     init_screen();
     //open server.pipe
     int outpipe;
@@ -57,7 +62,35 @@ int main(void) {
         return 1;
     }
     //get message and put into server.pipe
-    getch();
+    int key, pos, minpos;
+    if (argc == 2) {
+            strcpy(msg, argv[1]);
+            strcat(msg, ": ");
+            pos = minpos = strlen(argv[1]) + 2;
+    }
+    else {
+        sprintf(msg, "%d: ", pid);
+        pos = minpos = strlen(msg);
+    }
+    while ((key = getch()) != KEY_F(10)) {  //main cycle
+        switch (key) {
+        case '\n':  //KEY_ENTER
+            if (pos > minpos && write(outpipe, msg, pos) <=0) {
+                endwin();
+                perror("Error writing to server.pipe");
+                return 1;
+            }
+            pos = minpos;
+            clear_input();
+            break;
+        case KEY_BACKSPACE: //backspace
+            del_chr(msg, &pos, minpos);
+            break;
+        default:
+            add_chr(key, msg, &pos);
+            break;
+        }
+    }
     endwin();
     remove(pipefilename);
 }

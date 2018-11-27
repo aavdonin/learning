@@ -26,7 +26,7 @@ void init_screen(void) {
     initscr();
     clear();
     refresh();
-    //noecho();
+    noecho();
     keypad(stdscr, TRUE);
 
     WINDOW *borderwin1, *borderwin2;    //draw borders
@@ -46,4 +46,33 @@ void init_screen(void) {
     wrefresh(input);
     
     wmove(input,0,0);
+}
+
+void clear_input(void) {
+    werase(input);
+    wmove(input,0,0);
+    wrefresh(input);
+}
+
+void add_chr(int key, char *msg, int *pos) {
+    if ((key >= 0x20 && key <= 0x7E) || key == '\n') { //printable chars
+        if (*pos < MSGSIZE) {
+            msg[*pos] = key;
+            wprintw(input, "%c", key);
+            (*pos)++;
+        }
+    }
+    wrefresh(input);
+}
+
+void del_chr(char *msg, int *pos, int minpos) {
+    int x, y, max_x, max_y;
+    if (*pos > minpos) {
+        getyx(input, y, x);
+        getmaxyx(input, max_y, max_x);
+        (*pos)--;
+        wmove(input, (*pos - minpos)/max_x, (*pos - minpos)%max_x);
+        wclrtobot(input);
+    }
+    wrefresh(input);
 }
