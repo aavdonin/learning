@@ -1,16 +1,17 @@
 #include <ncurses.h>
 #include <pthread.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "../defines.h"
 #include "ui.h"
+
+static void send_reg_msg(int qid, int pid);
 
 WINDOW *chat, *input;
 
@@ -27,17 +28,9 @@ int main(int argc, char *argv[]) {
         perror("msgget");
         return 1;
     }
-    //get own pid
-    pid_t pid = getpid();
-    //send pid to server
-    memset(msg_out.mtext,0,MSGSIZE);
-    msg_out.mtype = 1;
-    sprintf(msg_out.mtext, "%d", pid);
-    if (msgsnd(msqid, &msg_out, strlen(msg_out.mtext), IPC_NOWAIT) < 0) {
-        perror("msgsnd(reg)");
-        return 1;
-    }
-    init_screen(); //start graphics
+    pid_t pid = getpid();       //get own pid
+    send_reg_msg(msqid, pid);   //send pid to server
+    init_screen();              //start graphics
     //make thread to recieve messages from queue and print to chatwindow
     pthread_t t_listener;
     int status;
@@ -48,13 +41,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    //get message and put into server.pipe
+    //get message and send to server
     int key, pos, minpos;
     char msg[MSGSIZE];
     if (argc == 2) {
-            strcpy(msg, argv[1]);
-            strcat(msg, ": ");
-            pos = minpos = strlen(argv[1]) + 2;
+        strcpy(msg, argv[1]);
+        strcat(msg, ": ");
+        pos = minpos = strlen(argv[1]) + 2;
     }
     else {
         sprintf(msg, "%d: ", pid);
@@ -66,8 +59,7 @@ int main(int argc, char *argv[]) {
             memset(msg_out.mtext,0,MSGSIZE);
             msg_out.mtype = 2;
             strcpy(msg_out.mtext, msg);
-            msg[pos] = '\0';
-            if (pos > minpos && msgsnd(msqid, &msg_out, pos,IPC_NOWAIT) < 0) {
+            if (pos > minpos && msgsnd(msqid, &msg_out, pos, IPC_NOWAIT) < 0) {
                 endwin();
                 perror("msgsnd(out)");
                 return 1;
@@ -84,12 +76,16 @@ int main(int argc, char *argv[]) {
         }
     }
     endwin();
-    //send unreg message
-    memset(msg_out.mtext,0,MSGSIZE);
-    msg_out.mtype = 1;
-    sprintf(msg_out.mtext, "%d", -pid);
-    if (msgsnd(msqid, &msg_out, strlen(msg_out.mtext), IPC_NOWAIT) < 0) {
+    send_reg_msg(msqid, -pid);  //send unreg message
+}
+
+static void send_reg_msg(int qid, int pid) {
+    message msg_reg;
+    memset(msg_reg.mtext,0,MSGSIZE);
+    msg_reg.mtype = 1;
+    sprintf(msg_reg.mtext, "%d", pid);
+    if (msgsnd(qid, &msg_reg, strlen(msg_reg.mtext), IPC_NOWAIT) < 0) {
         perror("msgsnd(reg)");
-        return 1;
+        exit(1);
     }
 }

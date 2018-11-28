@@ -1,7 +1,7 @@
 all: server client
 
-server: server.o array_fnc.o folders
-	gcc server/server.o server/array_fnc.o -lpthread -o bin/server
+server: server.o array_fnc.o hostess.o folders
+	gcc server/server.o server/array_fnc.o server/hostess.o -lpthread -o bin/server
 
 server.o: server/server.c server/array_fnc.h defines.h
 	gcc -c server/server.c -o server/server.o
@@ -17,6 +17,9 @@ ui.o: client/ui.c defines.h
 
 array_fnc.o: server/array_fnc.c
 	gcc -c server/array_fnc.c -o server/array_fnc.o
+
+hostess.o: server/hostess.c defines.h server/array_fnc.h
+	gcc -c server/hostess.c -o server/hostess.o
 
 clean:
 	rm -rf bin */*.o
