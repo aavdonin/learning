@@ -29,13 +29,22 @@ int main(int argc, char *argv[]) {
                 perror("msgrcv(reg)");
         }
         else {
-            //received new connection
-            printf("Client with pid <%s> connected\n", msg_reg.mtext);
-            //add client pid to array
-            clients = append(clients, atoi(msg_reg.mtext));
-            //send message about new client
             char msg[MSGSIZE];
-            sprintf(msg, "Client %d joined us!", atoi(msg_reg.mtext));
+            int cl_pid = atoi(msg_reg.mtext);
+            if (cl_pid > 0) {
+                //received new connection
+                printf("Client pid <%d> connected\n", cl_pid);
+                //add client pid to array
+                clients = append(clients, cl_pid);
+                //send message about new client
+                sprintf(msg, "User %d joined us!", cl_pid);
+            }
+            else {
+                //client disconnected
+                printf("Client pid <%d> disconnected\n", -cl_pid);
+                del(clients, -cl_pid);
+                sprintf(msg, "User %d leaves chat", -cl_pid);
+            }
             send_msg(msqid, clients, msg);
         }
 
@@ -64,10 +73,8 @@ void send_msg(int qid, int *clients, char *msg) {
         strcpy(msg_out.mtext, msg);
         if (msgsnd(qid, &msg_out, strlen(msg), IPC_NOWAIT) < 0) {
             perror("msgsnd");
-            //del(clients, i); //unregister client
             //todo: register and unregister clients in separate thread
-            //declare client dead if there are some messages addressed to him
-            //make blocking queue reads in main thread
+            //make blocking queue reads
         }
     }
 }

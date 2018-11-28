@@ -84,4 +84,12 @@ int main(int argc, char *argv[]) {
         }
     }
     endwin();
+    //send unreg message
+    memset(msg_out.mtext,0,MSGSIZE);
+    msg_out.mtype = 1;
+    sprintf(msg_out.mtext, "%d", -pid);
+    if (msgsnd(msqid, &msg_out, strlen(msg_out.mtext), IPC_NOWAIT) < 0) {
+        perror("msgsnd(reg)");
+        return 1;
+    }
 }

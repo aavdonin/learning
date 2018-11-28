@@ -34,8 +34,10 @@ int *append(int *arr, int value) {
     return newarr;
 }
 
-int *del(int *arr, int index) {
+int *del(int *arr, int value) {
     int size = arrlen(arr);
+    int index = 0;
+    while (arr[index] != value) index++;
     for (; index < size; index++) {
         arr[index] = arr[index+1];
     }

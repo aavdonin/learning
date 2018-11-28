@@ -3,6 +3,6 @@
 
 int arrlen(int *arr);
 int *append(int *arr, int value);
-int *del(int *arr, int index);
+int *del(int *arr, int value);
 
 #endif
