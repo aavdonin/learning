@@ -1,7 +1,7 @@
 all: server client
 
 server: server.o array_fnc.o folders
-	gcc server/server.o server/array_fnc.o -o bin/server
+	gcc server/server.o server/array_fnc.o -lpthread -o bin/server
 
 server.o: server/server.c server/array_fnc.h defines.h
 	gcc -c server/server.c -o server/server.o
