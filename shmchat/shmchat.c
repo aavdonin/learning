@@ -46,25 +46,18 @@ int main(int argc, char *argv[]) {
 
     //create and init semaphores
     ipc_key = ftok("shmchat.c", 2);
-    int semid = semget(ipc_key, 3, 0777 | IPC_CREAT);
+    int semid = semget(ipc_key, 1, 0777 | IPC_CREAT);
     if (!shm_exist) {
         union semun sem_controller;
-        unsigned short arr[] = {0, 1, 1};
-        sem_controller.array = arr;
+        sem_controller.val = 0;
         //MA = 0 - memory access semaphore, initially set to 0
-        //RD = 1 - read done semaphore, initially set to 1
-        //CA = 2 - client_num access, initially set to 1
-        semctl(semid, 0, SETALL, sem_controller);
+        semctl(semid, MA, SETVAL, sem_controller);
     }
     //add yourself to client_num
     struct sembuf op;
-    op = get_sembuf(CA, -1, 0); // lock sem CA
+    op = get_sembuf(MA, 0, 0); // wait for MA=0
     semop(semid, &op, 1);
     shmemory->client_num++;
-    op = get_sembuf(MA, 1, 0); // add 1 to sem MA
-    semop(semid, &op, 1);
-    op = get_sembuf(CA, 1, 0); // unlock sem CA
-    semop(semid, &op, 1);
 
     init_screen();              //start graphics
     //make thread to recieve messages from queue and print to chatwindow
@@ -94,17 +87,13 @@ int main(int argc, char *argv[]) {
         case '\n':  //KEY_ENTER
             if (pos <= minpos) break;
             struct sembuf op;
-            op = get_sembuf(CA, -1, 0); // lock sem CA
-            semop(semid, &op, 1);
-            op = get_sembuf(MA, -shmemory->client_num, 0); // lock whole sem MA
+            op = get_sembuf(MA, 0, 0); // wait for MA=0
             semop(semid, &op, 1);
 
             memset(shmemory->text, 0, MSGSIZE);
             strcpy(shmemory->text, msg);
 
             op = get_sembuf(MA, shmemory->client_num, 0); // unlock whole sem MA
-            semop(semid, &op, 1);
-            op = get_sembuf(RD, -1, 0); // lock sem RD
             semop(semid, &op, 1);
 
             pos = minpos;
@@ -120,16 +109,9 @@ int main(int argc, char *argv[]) {
     }
     endwin();
     //del yourself from client_num
-    {
-        struct sembuf op;
-        op = get_sembuf(CA, -1, 0); // lock sem CA
-        semop(semid, &op, 1);
-        shmemory->client_num--;
-        op = get_sembuf(MA, -1, 0); // sub 1 from sem MA
-        semop(semid, &op, 1);
-        op = get_sembuf(CA, 1, 0); // unlock sem CA
-        semop(semid, &op, 1);
-    }
+    op = get_sembuf(MA, 0, 0); // wait for MA=0
+    semop(semid, &op, 1);
+    shmemory->client_num--;
     //destroy shared memory and semaphores if you're the last
     if (shmemory->client_num == 0) {
         shmctl(shmid, IPC_RMID, NULL);

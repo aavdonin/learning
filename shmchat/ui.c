@@ -19,40 +19,34 @@ struct sembuf get_sembuf(unsigned short sem_num, short sem_op, short sem_flg) {
     return buf;
 }
 
+static void put_line(char *text) {
+    int x, y, curs_x, curs_y;
+    getmaxyx(chat,y,x);
+    getyx(input, curs_y, curs_x);
+    mvwprintw(chat, y-1, x-1, "\n%s", text);  //print to chat win
+    wmove(input, curs_y, curs_x);
+    wrefresh(chat);
+    wrefresh(input);
+}
 void *listenmsg(void *arg) {
     mem_t *shmemory = (mem_t *) arg;
     key_t ipckey = ftok("shmchat.c", 2);
-    int semid = semget(ipckey, 3, 0777);
+    int semid = semget(ipckey, 1, 0777);
 
     int x, y, curs_x, curs_y;
     getmaxyx(chat,y,x);
     getyx(input, curs_y, curs_x);
     while (1) {
         struct sembuf op;
-        op = get_sembuf(RD, 0, 0); // wait for RD=0
+        op = get_sembuf(MA, -1, 0);  //decrease MA by 1
         semop(semid, &op, 1);
-
         mvwprintw(chat, y-1, x-1, "\n%s", shmemory->text);  //print to chat win
         wmove(input, curs_y, curs_x);
         wrefresh(chat);
         wrefresh(input);
 
-        op = get_sembuf(MA, -1, IPC_NOWAIT);  //decrease MA by 1
-        if (semop(semid, &op, 1) < 0) { //raise error if there is no free slots
-            endwin();
-            perror("semop MA -1");
-            exit(1);
-        }
-
         op = get_sembuf(MA, 0, 0); // wait for MA=0
         semop(semid, &op, 1);
-        union semun sem_controller;
-        sem_controller.val = 1;
-        semctl(semid, RD, SETVAL, sem_controller); //set RD to 1
-        semctl(semid, CA, SETVAL, sem_controller); //set CA to 1
-        op = get_sembuf(MA, 1, 0); // increase MA by 1
-        semop(semid, &op, 1);
-
     }
 }
 
