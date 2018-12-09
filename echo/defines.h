@@ -6,5 +6,6 @@
 
 #define BACKLOG 4
 #define BUFSIZE 1024
+#define CMDSIZE 64
 
 #endif
