@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-#include "defines.h"
+#include "../defines.h"
 
 void tcp_client(void) {
     int sock_tcp; //socket file descriptor

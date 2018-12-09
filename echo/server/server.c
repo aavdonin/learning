@@ -7,7 +7,7 @@
 #include <errno.h>
 #include "serv_tcp.h"
 #include "serv_udp.h"
-#include "defines.h"
+#include "../defines.h"
 
 int main (int argc, char *argv[]) {
     pthread_t t_tcp, t_udp;

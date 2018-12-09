@@ -3,7 +3,7 @@
 
 #include "cli_tcp.h"
 #include "cli_udp.h"
-#include "defines.h"
+#include "../defines.h"
 
 int main(int argc, char *argv[]) {
     char cmd[CMDSIZE];
