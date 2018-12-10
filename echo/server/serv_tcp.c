@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -10,11 +11,11 @@
 #include <errno.h>
 
 #include "../defines.h"
+static void *cl_handler(void *arg);
 
 void *tcp_sock(void *arg) {
     int sock_tcp; //socket file descriptor
     struct sockaddr_in addr;
-    char buf[BUFSIZE];
 
     sock_tcp = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_tcp < 0) {
@@ -32,23 +33,36 @@ void *tcp_sock(void *arg) {
     listen(sock_tcp, BACKLOG);
 
     while (1) {
+        pthread_t t_client;
+        int status;
         int new_sock;
         struct sockaddr_in peer_addr;
         int addr_size = sizeof(peer_addr);
-        int msglen;
         new_sock = accept(sock_tcp, (struct sockaddr *)&peer_addr, &addr_size);
         printf("Incoming TCP connection: %s:%d\n",
         inet_ntoa(peer_addr.sin_addr),
         ntohs(peer_addr.sin_port));
 
-        if ((msglen = recv(new_sock, buf, BUFSIZE, 0)) < 0) {
-            perror("TCP recv failed");
-            break;
+        //start thread for connected client
+        status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
+        if (status != 0) {
+            perror("Unable to create 't_client' thread!\n");
         }
-        if (send(new_sock, buf, msglen, 0) < 0) {
-            perror("TCP send failed");
-        }
-        close(new_sock);
-        printf("TCP client disconnected\n");
     }
+}
+
+static void *cl_handler(void *arg) {
+    int *client_socket = (int *)arg;
+    char buf[BUFSIZE];
+    ssize_t msglen;
+    if ((msglen = recv(*client_socket, buf, BUFSIZE, 0)) < 0) {
+        perror("TCP recv failed");
+        close(*client_socket);
+        pthread_exit(NULL);
+    }
+    if (send(*client_socket, buf, msglen, 0) < 0) {
+        perror("TCP send failed");
+    }
+    close(*client_socket);
+    printf("TCP client disconnected\n");
 }
