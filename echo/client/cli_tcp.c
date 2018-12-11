@@ -17,9 +17,6 @@ void tcp_client(void) {
     char buf[BUFSIZE];
     char recvbuf[BUFSIZE];
     ssize_t msglen;
-    printf("Enter message to send: ");
-    fgets(buf, BUFSIZE, stdin);
-    buf[strlen(buf)-1] = '\0'; //replace '\n' with '\0'
 
     sock_tcp = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_tcp < 0) {
@@ -34,17 +31,29 @@ void tcp_client(void) {
         perror("TCP connect error");
         return;
     }
-    if (send(sock_tcp, buf, strlen(buf), 0) < 0) {
+    while(1) {
+        printf("Enter message to send (or \"!quit\"): ");
+        fgets(buf, BUFSIZE, stdin);
+        buf[strlen(buf)-1] = '\0'; //replace '\n' with '\0'
+        if (strcmp(buf, "!quit") == 0)
+            break;
+
+        if (send(sock_tcp, buf, strlen(buf), 0) < 0) {
+            perror("TCP send failed");
+            return;
+        }
+        printf("Sent:     <%s>\n", buf);
+        memset(recvbuf, 0, BUFSIZE);
+        if ((msglen = recv(sock_tcp, recvbuf, BUFSIZE, 0)) < 0) {
+            perror("TCP recv failed");
+            return;
+        }
+        printf("Received: <%s>\n", recvbuf);
+    }
+
+    if (send(sock_tcp, "bye", 3, 0) < 0) { //send bye-message before exit
         perror("TCP send failed");
         return;
     }
-    printf("Sent:     <%s>\n", buf);
-    memset(recvbuf, 0, BUFSIZE);
-    if ((msglen = recv(sock_tcp, recvbuf, BUFSIZE, 0)) < 0) {
-        perror("TCP recv failed");
-        return;
-    }
-    printf("Received: <%s>\n", recvbuf);
-
     close(sock_tcp);
 }

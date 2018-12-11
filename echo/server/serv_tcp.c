@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "../defines.h"
 static void *cl_handler(void *arg);
@@ -44,6 +45,7 @@ void *tcp_sock(void *arg) {
         ntohs(peer_addr.sin_port));
 
         //start thread for connected client
+        printf("starting new thread for socket %d\n", new_sock);
         status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
         if (status != 0) {
             perror("Unable to create 't_client' thread!\n");
@@ -52,17 +54,20 @@ void *tcp_sock(void *arg) {
 }
 
 static void *cl_handler(void *arg) {
-    int *client_socket = (int *)arg;
+    int client_socket = *((int *)arg);
     char buf[BUFSIZE];
     ssize_t msglen;
-    if ((msglen = recv(*client_socket, buf, BUFSIZE, 0)) < 0) {
-        perror("TCP recv failed");
-        close(*client_socket);
-        pthread_exit(NULL);
+    signal(SIGPIPE, SIG_IGN);
+    while(1) {
+        if ((msglen = recv(client_socket, buf, BUFSIZE, 0)) < 0) {
+            perror("TCP recv failed");
+            break;
+        }
+        if (send(client_socket, buf, msglen, 0) < 0) {
+            perror("TCP send failed");
+            break;
+        }
     }
-    if (send(*client_socket, buf, msglen, 0) < 0) {
-        perror("TCP send failed");
-    }
-    close(*client_socket);
+    close(client_socket);
     printf("TCP client disconnected\n");
 }
