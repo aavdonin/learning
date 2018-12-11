@@ -45,7 +45,6 @@ void *tcp_sock(void *arg) {
         ntohs(peer_addr.sin_port));
 
         //start thread for connected client
-        printf("starting new thread for socket %d\n", new_sock);
         status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
         if (status != 0) {
             perror("Unable to create 't_client' thread!\n");
