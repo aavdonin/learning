@@ -50,10 +50,5 @@ void tcp_client(void) {
         }
         printf("Received: <%s>\n", recvbuf);
     }
-
-    if (send(sock_tcp, "bye", 3, 0) < 0) { //send bye-message before exit
-        perror("TCP send failed");
-        return;
-    }
     close(sock_tcp);
 }

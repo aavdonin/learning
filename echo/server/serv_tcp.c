@@ -9,7 +9,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <signal.h>
 
 #include "../defines.h"
 static void *cl_handler(void *arg);
@@ -56,10 +55,13 @@ static void *cl_handler(void *arg) {
     int client_socket = *((int *)arg);
     char buf[BUFSIZE];
     ssize_t msglen;
-    signal(SIGPIPE, SIG_IGN);
     while(1) {
         if ((msglen = recv(client_socket, buf, BUFSIZE, 0)) < 0) {
             perror("TCP recv failed");
+            break;
+        }
+        else if (msglen == 0) {
+            printf("TCP client closed connection\n");
             break;
         }
         if (send(client_socket, buf, msglen, 0) < 0) {
@@ -68,5 +70,4 @@ static void *cl_handler(void *arg) {
         }
     }
     close(client_socket);
-    printf("TCP client disconnected\n");
 }
