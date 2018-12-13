@@ -18,10 +18,18 @@ int main (int argc, char *argv[]) {
         perror("Unable to create 't_tcp' thread!\n");
         return 1;
     }
+    if (pthread_detach(t_tcp) != 0) {
+        perror("Unable to detach 't_tcp' thread!\n");
+        return 1;
+    }
     //start thread for UDP socket
     status = pthread_create(&t_udp, NULL, udp_sock, NULL);
     if (status != 0) {
         perror("Unable to create 't_udp' thread!\n");
+        return 1;
+    }
+    if (pthread_detach(t_udp) != 0) {
+        perror("Unable to detach 't_tcp' thread!\n");
         return 1;
     }
 

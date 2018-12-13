@@ -11,8 +11,7 @@
 #include <errno.h>
 
 #include "../defines.h"
-
-static void *cl_handler(void *arg);
+#include "cl_handler.h"
 
 void *udp_sock(void *arg) {
     int sock_udp; //socket that listens to new "connections"
@@ -45,7 +44,7 @@ void *udp_sock(void *arg) {
         (struct sockaddr *)&peer_addr, &addr_size);
         if (msglen < 0) {
             perror("UDP recvfrom failed");
-            break;
+            continue;
         }
         buf[msglen] = '\0';
         printf("Incoming UDP connection: %s:%d\n",
@@ -55,7 +54,7 @@ void *udp_sock(void *arg) {
         new_sock = socket(AF_INET, SOCK_DGRAM, 0);
         if (new_sock < 0) {
             perror("UDP Socket creation error");
-            exit(1);
+            continue;
         }
         new_sv_addr.sin_family = AF_INET;
         new_sv_addr.sin_port = 0;   //port=0 to get random port number
@@ -74,12 +73,18 @@ void *udp_sock(void *arg) {
         
         if (connect(new_sock, (struct sockaddr*)&peer_addr, addr_size) != 0) {
             perror("UDP Socket connect error");
-            return;
+            close(new_sock);
+            continue;
         }
         //start thread for connected client
         status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
         if (status != 0) {
             perror("Unable to create 't_client' thread!\n");
+            close(new_sock);
+            continue;
+        }
+        if (pthread_detach(t_client) != 0) {
+            perror("Unable to detach 't_client' thread!\n");
         }
         
         //get new port number into buf
@@ -89,27 +94,8 @@ void *udp_sock(void *arg) {
         if (sendto(sock_udp, buf, strlen(buf), MSG_CONFIRM,
         (const struct sockaddr *)&peer_addr, addr_size) < 0) {
             perror("UDP sendto failed");
+            close(new_sock);
+            continue;
         }
     }
-}
-
-static void *cl_handler(void *arg) {
-    int client_socket = *((int *)arg);
-    char buf[BUFSIZE];
-    ssize_t msglen;
-    while(1) {
-        if ((msglen = recv(client_socket, buf, BUFSIZE, 0)) < 0) {
-            perror("UDP recv failed");
-            break;
-        }
-        else if (msglen == 0) {
-            printf("UDP client closed connection\n");
-            break;
-        }
-        if (send(client_socket, buf, msglen, 0) < 0) {
-            perror("UDP send failed");
-            break;
-        }
-    }
-    close(client_socket);
 }

@@ -11,7 +11,7 @@
 #include <errno.h>
 
 #include "../defines.h"
-static void *cl_handler(void *arg);
+#include "cl_handler.h"
 
 void *tcp_sock(void *arg) {
     int sock_tcp; //socket file descriptor
@@ -47,27 +47,11 @@ void *tcp_sock(void *arg) {
         status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
         if (status != 0) {
             perror("Unable to create 't_client' thread!\n");
+            close(new_sock);
+            continue;
+        }
+        if (pthread_detach(t_client) != 0) {
+            perror("Unable to detach 't_client' thread!\n");
         }
     }
-}
-
-static void *cl_handler(void *arg) {
-    int client_socket = *((int *)arg);
-    char buf[BUFSIZE];
-    ssize_t msglen;
-    while(1) {
-        if ((msglen = recv(client_socket, buf, BUFSIZE, 0)) < 0) {
-            perror("TCP recv failed");
-            break;
-        }
-        else if (msglen == 0) {
-            printf("TCP client closed connection\n");
-            break;
-        }
-        if (send(client_socket, buf, msglen, 0) < 0) {
-            perror("TCP send failed");
-            break;
-        }
-    }
-    close(client_socket);
 }
