@@ -1,4 +1,4 @@
-all: server
+all: server select_server
 
 server: server.o serv_tcp.o serv_udp.o cl_handler.o
 	gcc server.o serv_tcp.o serv_udp.o cl_handler.o -lpthread -o ../bin/server
@@ -14,3 +14,10 @@ serv_udp.o: serv_udp.c ../defines.h
 
 cl_handler.o: cl_handler.c ../defines.h
 	gcc -c cl_handler.c
+
+select_server: select_server.o
+	gcc select_server.o -o ../bin/select_server
+
+select_server.o: select_server.c ../defines.h
+	gcc -c select_server.c
+
