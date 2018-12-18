@@ -15,8 +15,8 @@ serv_udp.o: serv_udp.c ../defines.h
 cl_handler.o: cl_handler.c ../defines.h
 	gcc -c cl_handler.c
 
-select_server: select_server.o
-	gcc select_server.o -o ../bin/select_server
+select_server: select_server.o cl_handler.o
+	gcc select_server.o cl_handler.o -o ../bin/select_server
 
 select_server.o: select_server.c ../defines.h
 	gcc -c select_server.c
