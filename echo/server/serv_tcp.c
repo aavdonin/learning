@@ -12,6 +12,7 @@
 
 #include "../defines.h"
 #include "cl_handler.h"
+#include "accept.h"
 
 void *tcp_sock(void *arg) {
     int sock_tcp; //socket file descriptor
@@ -35,13 +36,7 @@ void *tcp_sock(void *arg) {
     while (1) {
         pthread_t t_client;
         int status;
-        int new_sock;
-        struct sockaddr_in peer_addr;
-        int addr_size = sizeof(peer_addr);
-        new_sock = accept(sock_tcp, (struct sockaddr *)&peer_addr, &addr_size);
-        printf("Incoming TCP connection: %s:%d\n",
-        inet_ntoa(peer_addr.sin_addr),
-        ntohs(peer_addr.sin_port));
+        int new_sock = accept_tcp(sock_tcp);
 
         //start thread for connected client
         status = pthread_create(&t_client, NULL, cl_handler, (void *)&new_sock);
