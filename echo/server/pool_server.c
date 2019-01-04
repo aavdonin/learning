@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <poll.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,9 +21,28 @@ typedef struct {
     int cl_cnt;
 } thread_info_t;
 #define MAX_THREAD_CLIENTS 100
+#define THREAD_POOL_SIZE 10
 void *handler_thread(void *arg);
 
 int main(int argc, char *argv[]) {
+    thread_info_t pool[THREAD_POOL_SIZE];
+    int i, status;
+    for (i=0; i<THREAD_POOL_SIZE; i++) {
+        if (pipe(pool[i].pipe) < 0) {
+            perror("pipe creation failed");
+        }
+        pool[i].cl_cnt = 0;
+        status = pthread_create(&(pool[i].tid), NULL, handler_thread, \
+        (void *) &(pool[i]);
+        if (status != 0) {
+            perror("Unable to create 'handler_thread' thread!\n");
+            return 1;
+        }
+        if (pthread_detach(pool[i].tid) != 0) {
+            perror("Unable to detach 'handler_thread' thread!\n");
+            return 1;
+        }
+    }
     int sock_tcp, sock_udp; //socket file descriptor
     struct sockaddr_in addr;
 
@@ -50,13 +70,14 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     listen(sock_tcp, BACKLOG);
-    //poll
+    //poll 'em
     struct pollfd socks[2];
     socks[0].fd = sock_tcp;
     socks[0].events = POLLIN;
     socks[1].fd = sock_udp;
     socks[1].events = POLLIN;
 
+    i = 0;
     while(1) {
         int ret = poll(socks, (nfds_t)2, 100); //100 = 0.1sec
         if (ret == -1)
@@ -70,7 +91,16 @@ int main(int argc, char *argv[]) {
             if (new_sock < 0) {
                 perror("accept_tcp");
             }
-            //cl_handler((void *)&new_sock);
+            
+            while (pool[i].cl_cnt >= MAX_THREAD_CLIENTS)
+                if (++i >= THREAD_POOL_SIZE) i -= THREAD_POOL_SIZE;
+            if (write(pool[i].pipe[1], &new_sock, sizeof(new_sock)) > 0) {
+                if (++i >= THREAD_POOL_SIZE) i -= THREAD_POOL_SIZE;
+            } 
+            else {
+                perror("Failed to write socket descriptor to pipe");
+                close(new_sock);
+            }
         }
         if (socks[1].revents & POLLIN) {
             socks[1].revents = 0;
@@ -78,7 +108,16 @@ int main(int argc, char *argv[]) {
             if (new_sock < 0) {
                 perror("accept_udp");
             }
-            //cl_handler((void *)&new_sock);
+            
+            while (pool[i].cl_cnt >= MAX_THREAD_CLIENTS)
+                if (++i >= THREAD_POOL_SIZE) i -= THREAD_POOL_SIZE;
+            if (write(pool[i].pipe[1], &new_sock, sizeof(new_sock)) > 0) {
+                if (++i >= THREAD_POOL_SIZE) i -= THREAD_POOL_SIZE;
+            } 
+            else {
+                perror("Failed to write socket descriptor to pipe");
+                close(new_sock);
+            }
         }
     }
 }
@@ -101,7 +140,7 @@ void *handler_thread(void *arg) {
         if (fds[0].revents & POLLIN) {//received new socket descriptor from pipe
             fds[0].revents = 0;
             int new_sock;
-            if (read(fds[0], new_sock, sizeof(new_sock)) <= 0) {
+            if (read(fds[0], &new_sock, sizeof(new_sock)) <= 0) {
                 perror("thread read from pipe err");
             }
             else {
