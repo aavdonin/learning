@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         }
         pool[i].cl_cnt = 0;
         status = pthread_create(&(pool[i].tid), NULL, handler_thread, \
-        (void *) &(pool[i]);
+        (void *) &(pool[i]));
         if (status != 0) {
             perror("Unable to create 'handler_thread' thread!\n");
             return 1;
@@ -140,7 +140,7 @@ void *handler_thread(void *arg) {
         if (fds[0].revents & POLLIN) {//received new socket descriptor from pipe
             fds[0].revents = 0;
             int new_sock;
-            if (read(fds[0], &new_sock, sizeof(new_sock)) <= 0) {
+            if (read(fds[0].fd, &new_sock, sizeof(new_sock)) <= 0) {
                 perror("thread read from pipe err");
             }
             else {

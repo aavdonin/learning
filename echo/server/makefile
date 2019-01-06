@@ -1,4 +1,4 @@
-all: server select_server poll_server epoll_server
+all: server select_server poll_server epoll_server pool_server
 
 server: server.o serv_tcp.o serv_udp.o cl_handler.o accept.o
 	gcc server.o serv_tcp.o serv_udp.o cl_handler.o accept.o -lpthread -o ../bin/server
@@ -35,4 +35,10 @@ epoll_server: epoll_server.o cl_handler.o accept.o
 
 epoll_server.o: epoll_server.c ../defines.h accept.h
 	gcc -c epoll_server.c
+
+pool_server: pool_server.o accept.o
+	gcc pool_server.o accept.o -lpthread -o ../bin/pool_server
+
+pool_server.o: pool_server.c ../defines.h accept.h
+	gcc -c pool_server.c
 
