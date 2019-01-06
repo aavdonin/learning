@@ -36,8 +36,8 @@ epoll_server: epoll_server.o cl_handler.o accept.o
 epoll_server.o: epoll_server.c ../defines.h accept.h
 	gcc -c epoll_server.c
 
-pool_server: pool_server.o accept.o
-	gcc pool_server.o accept.o -lpthread -o ../bin/pool_server
+pool_server: pool_server.o cl_handler.o accept.o
+	gcc pool_server.o cl_handler.o accept.o -lpthread -o ../bin/pool_server
 
 pool_server.o: pool_server.c ../defines.h accept.h
 	gcc -c pool_server.c
