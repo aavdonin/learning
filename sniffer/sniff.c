@@ -9,13 +9,6 @@
 /*
 TODO:
 - specify interface and filter expression as command line arguments
-- separate funcs for printing packet headers:
- + ethernet
- + ip
- + tcp
- + udp
-+ payload hex-printing function
-- add UDP
 */
 void callback_fnc(u_char *args, const struct pcap_pkthdr *header,
 const u_char *packet);
@@ -72,10 +65,11 @@ const u_char *packet) {
     const struct sniff_ethernet *ethernet; /* The ethernet header */
     const struct sniff_ip *ip; /* The IP header */
     const struct sniff_tcp *tcp; /* The TCP header */
+    const struct sniff_udp *udp; /* The UDP header */
     const char *payload; /* Packet payload */
 
     u_int size_ip;
-    u_int size_tcp;
+    u_int size_tcpudp;
     ethernet = (struct sniff_ethernet*)(packet);
     print_ether(ethernet);
 
@@ -87,16 +81,23 @@ const u_char *packet) {
     }
     print_ip(ip);
 
-    tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
-    size_tcp = TH_OFF(tcp)*4;
-    if (size_tcp < 20) {
-        printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
-        return;
+    if (ip->ip_p == 0x6) {  //TCP
+        tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
+        size_tcpudp = TH_OFF(tcp)*4;
+        if (size_tcpudp < 20) {
+            printf("   * Invalid TCP header length: %u bytes\n", size_tcpudp);
+            return;
+        }
+        print_tcp(tcp);
     }
-    print_tcp(tcp);
+    else if (ip->ip_p == 0x11) {    //UDP
+        udp = (struct sniff_udp*)(packet + SIZE_ETHERNET + size_ip);
+        size_tcpudp = 8;
+        print_udp(udp);
+    }
 
-    payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
-    int payload_len = header->caplen - (SIZE_ETHERNET + size_ip + size_tcp);
+    payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcpudp);
+    int payload_len = header->caplen - (SIZE_ETHERNET + size_ip + size_tcpudp);
     printf("Payload:\n");
     print_payload(payload, payload_len);
     printf("\n--------------------\n");
