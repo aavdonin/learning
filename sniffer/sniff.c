@@ -9,8 +9,12 @@
 /*
 TODO:
 - specify interface and filter expression as command line arguments
-- separate funcs for printing packet headers
-V payload hex-printing function
+- separate funcs for printing packet headers:
+ + ethernet
+ + ip
+ + tcp
+ + udp
++ payload hex-printing function
 - add UDP
 */
 void callback_fnc(u_char *args, const struct pcap_pkthdr *header,
@@ -74,16 +78,14 @@ const u_char *packet) {
     u_int size_tcp;
     ethernet = (struct sniff_ethernet*)(packet);
     print_ether(ethernet);
+
     ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     size_ip = IP_HL(ip)*4;
     if (size_ip < 20) {
         printf("   * Invalid IP header length: %u bytes\n", size_ip);
         return;
     }
-    printf("IP type of service: %d\n", ip->ip_tos);
-    printf("IP protocol: %d\n", ip->ip_p);
-    printf("IP source: %s\n", inet_ntoa(ip->ip_src));
-    printf("IP dest: %s\n", inet_ntoa(ip->ip_dst));
+    print_ip(ip);
 
     tcp = (struct sniff_tcp*)(packet + SIZE_ETHERNET + size_ip);
     size_tcp = TH_OFF(tcp)*4;
@@ -91,8 +93,7 @@ const u_char *packet) {
         printf("   * Invalid TCP header length: %u bytes\n", size_tcp);
         return;
     }
-    printf("TCP source port: %d\n", tcp->th_sport);
-    printf("TCP dest port: %d\n", tcp->th_dport);
+    print_tcp(tcp);
 
     payload = (u_char *)(packet + SIZE_ETHERNET + size_ip + size_tcp);
     int payload_len = header->caplen - (SIZE_ETHERNET + size_ip + size_tcp);

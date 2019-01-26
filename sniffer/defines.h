@@ -17,7 +17,7 @@ struct sniff_ethernet {
 struct sniff_ip {
         u_char ip_vhl;		/* version << 4 | header length >> 2 */
         u_char ip_tos;		/* type of service */
-        u_short ip_len;		/* total length */
+        u_short ip_len;		/* total length (header + data) */
         u_short ip_id;		/* identification */
         u_short ip_off;		/* fragment offset field */
 #define IP_RF 0x8000		/* reserved fragment flag */
