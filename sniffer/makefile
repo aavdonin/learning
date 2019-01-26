@@ -9,3 +9,6 @@ sniff.o: sniff.c defines.h
 print.o: print.c defines.h
 	gcc -c print.c
 
+clean:
+	rm *.o sniff
+

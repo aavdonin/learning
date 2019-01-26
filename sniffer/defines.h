@@ -25,7 +25,7 @@ struct sniff_ip {
 #define IP_MF 0x2000		/* more fragments flag */
 #define IP_OFFMASK 0x1fff	/* mask for fragmenting bits */
         u_char ip_ttl;		/* time to live */
-        u_char ip_p;		/* protocol */
+        u_char ip_p;		/* protocol */ //0x6 for TCP, 0x11 for UDP
         u_short ip_sum;		/* checksum */
         struct in_addr ip_src,ip_dst; /* source and dest address */
 };
@@ -57,4 +57,10 @@ struct sniff_tcp {
         u_short th_urp;		/* urgent pointer */
 };
 
+struct sniff_udp {
+    u_short ud_sport;           /* source port */
+    u_short ud_dport;           /* destination port */
+    u_short ud_len;             /* length (header+data) */
+    u_short ud_sum;             /* checksum */
+};
 #endif
