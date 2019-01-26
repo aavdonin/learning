@@ -73,9 +73,7 @@ const u_char *packet) {
     u_int size_ip;
     u_int size_tcp;
     ethernet = (struct sniff_ethernet*)(packet);
-    printf("Ethernet source : %s\n", ethernet->ether_shost);
-    printf("Ethernet dest   : %s\n", ethernet->ether_dhost);
-    printf("Ethernet type   : %d\n", ethernet->ether_type);
+    print_ether(ethernet);
     ip = (struct sniff_ip*)(packet + SIZE_ETHERNET);
     size_ip = IP_HL(ip)*4;
     if (size_ip < 20) {
