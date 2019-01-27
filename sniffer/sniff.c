@@ -1,25 +1,35 @@
 #include <pcap.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "defines.h"
 #include "print.h"
-/*
-TODO:
-- specify interface and filter expression as command line arguments
-*/
+
 void callback_fnc(u_char *args, const struct pcap_pkthdr *header,
 const u_char *packet);
 
 int main(int argc, char *argv[]) {
+    if (argc < 2 || argc > 3) {
+        if (argc < 2)
+            fprintf(stderr, "Not enough arguments!\n");
+        if (argc > 3)
+            fprintf(stderr, "Too much arguments!\n");
+        fprintf(stderr, "Usage: %s \"filter expression\" [interface]\n",
+        argv[0]);
+        exit(1);
+    }
     char *dev, errbuf[PCAP_ERRBUF_SIZE];
-
-    dev = pcap_lookupdev(errbuf);
-    if (dev == NULL) {
-            fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
-            return(2);
+    if (argc == 3)
+        dev = argv[2];
+    else {
+        dev = pcap_lookupdev(errbuf);
+        if (dev == NULL) {
+                fprintf(stderr, "Couldn't find default device: %s\n", errbuf);
+                return(2);
+        }
     }
     printf("Device: %s\n", dev);
 
@@ -35,7 +45,7 @@ int main(int argc, char *argv[]) {
         return(2);
     }
     struct bpf_program fp;		/* The compiled filter expression */
-    char filter_exp[] = "port 80";	/* The filter expression */
+    char *filter_exp = argv[1];	/* The filter expression */
     bpf_u_int32 mask;		/* The netmask of sniffing device */
     bpf_u_int32 net;		/* The IP of sniffing device */
     if (pcap_lookupnet(dev, &net, &mask, errbuf) == -1) {

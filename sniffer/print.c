@@ -26,23 +26,23 @@ void print_ether(const struct sniff_ethernet *ethernet) {
 
 void print_ip(const struct sniff_ip* ip) {
     printf("IP header len: %d\n", IP_HL(ip)*4);
-    printf("IP total  len: %d\n", ip->ip_len);
+    printf("IP total  len: %d\n", ntohs(ip->ip_len));
     printf("IP protocol: %d\n", ip->ip_p);
     printf("IP source: %s\n", inet_ntoa(ip->ip_src));
     printf("IP dest: %s\n", inet_ntoa(ip->ip_dst));
 }
 
 void print_tcp(const struct sniff_tcp* tcp) {
-    printf("TCP source port: %d\n", tcp->th_sport);
-    printf("TCP dest port: %d\n", tcp->th_dport);
+    printf("TCP source port: %d\n", ntohs(tcp->th_sport));
+    printf("TCP dest port: %d\n", ntohs(tcp->th_dport));
     printf("TCP header len: %d\n", TH_OFF(tcp)*4);
-    printf("TCP sequence number: %u\n", tcp->th_seq);
+    printf("TCP sequence number: %u\n", ntohs(tcp->th_seq));
     if (tcp->th_flags & TH_ACK)
-        printf("TCP acknowledgment number: %u\n", tcp->th_ack);
+        printf("TCP acknowledgment number: %u\n", ntohs(tcp->th_ack));
 }
 
 void print_udp(const struct sniff_udp* udp) {
-    printf("UDP source port: %u\n", udp->ud_sport);
-    printf("UDP dest port: %u\n", udp->ud_dport);
-    printf("UDP total len: %u\n", udp->ud_len);
+    printf("UDP source port: %u\n", ntohs(udp->ud_sport));
+    printf("UDP dest port: %u\n", ntohs(udp->ud_dport));
+    printf("UDP total len: %u\n", ntohs(udp->ud_len));
 }
