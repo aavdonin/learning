@@ -1,4 +1,4 @@
-all: dirs client server
+all: dirs client server raw
 
 dirs:
 	mkdir -p bin
@@ -8,6 +8,9 @@ server: dirs
 
 client: dirs
 	make -C client all
+
+raw: dirs
+	make -C raw all
 
 clean:
 	rm -rf */*.o bin 
