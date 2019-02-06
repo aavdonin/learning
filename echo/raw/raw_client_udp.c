@@ -19,30 +19,43 @@ int main(int argc, char *argv[]) {
     int new_port; //port number that client will be "reconnected" to
     struct sockaddr_in addr;
     ssize_t msglen;
+    int headerlen = 28;
     char buf[BUFSIZE];
     char recvbuf[BUFSIZE];
     char *payload;
-    struct udphdr *udp_header_out, *udp_header_in;
-    struct iphdr *ip_header_in;
+    struct udphdr *udp_header_out;
+    struct iphdr *ip_header_out;
 
     sock_raw = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
     if (sock_raw < 0) {
         perror("RAW Socket creation error");
         exit(1);
     }
-
+    int on = 1;
+    if (setsockopt(sock_raw, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) == -1) {
+        perror("setsockopt() failed");
+        exit(1);
+    }
     addr.sin_family = AF_INET;
     addr.sin_port = htons(UDP_PORT);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     //say hello
     memset(buf, 0, BUFSIZE);
-    udp_header_out = (struct udphdr *) buf;
+    ip_header_out = (struct iphdr *) buf;
+    ip_header_out->version = 4;
+    ip_header_out->ihl = 5;
+    ip_header_out->tot_len = htons(headerlen);
+    ip_header_out->ttl = 0x40;
+    ip_header_out->protocol = 0x11;
+    ip_header_out->saddr = inet_addr("127.0.0.1");
+    ip_header_out->daddr = inet_addr("127.0.0.1");
+    udp_header_out = (struct udphdr *) (buf + 20);
     udp_header_out->uh_sport = htons(MY_PORT);
     udp_header_out->uh_dport = htons(UDP_PORT);
     udp_header_out->uh_ulen = htons(sizeof(udp_header_out));
     udp_header_out->uh_sum = 0;
-    if (sendto(sock_raw, buf, sizeof(udp_header_out), MSG_CONFIRM,
+    if (sendto(sock_raw, buf, ntohs(ip_header_out->tot_len), MSG_CONFIRM,
     (const struct sockaddr *)&addr, sizeof(addr)) < 0) {
         perror("UDP sendto failed (hello)");
         exit(1);
@@ -54,26 +67,34 @@ int main(int argc, char *argv[]) {
 
     while (1) {
         memset(buf, 0, BUFSIZE);
+        ip_header_out->version = 4;
+        ip_header_out->ihl = 5;
+        ip_header_out->ttl = 0x40;
+        ip_header_out->protocol = 0x11;
+        ip_header_out->saddr = inet_addr("127.0.0.1");
+        ip_header_out->daddr = inet_addr("127.0.0.1");
         udp_header_out->uh_sport = htons(MY_PORT);
         udp_header_out->uh_dport = htons(new_port);
-        char *msg = buf + sizeof(udp_header_out);
+        char *msg = buf + headerlen;
         printf("Enter message to send (or \"!quit\"): ");
-        fgets(msg, BUFSIZE - sizeof(udp_header_out), stdin);
+        fgets(msg, BUFSIZE - headerlen, stdin);
         msg[strlen(msg)-1] = '\0'; //replace '\n' with '\0'
         if (strcmp(msg, "!quit") == 0) {
             //say goodbye
             printf("Disconnecting\n");
-            memset(msg, 0, BUFSIZE - sizeof(udp_header_out));
+            memset(msg, 0, BUFSIZE - headerlen);
+            ip_header_out->tot_len = htons(headerlen);
             udp_header_out->uh_ulen = htons(sizeof(udp_header_out));
-            if (sendto(sock_raw, buf, sizeof(udp_header_out), MSG_CONFIRM,
+            if (sendto(sock_raw, buf, headerlen, MSG_CONFIRM,
             (const struct sockaddr *)&addr, sizeof(addr)) < 0) {
                 perror("UDP sendto failed (bye)");
                 exit(1);
             }
             break;
         }
+        ip_header_out->tot_len = htons(headerlen + strlen(msg));
         udp_header_out->uh_ulen = htons(sizeof(udp_header_out) + strlen(msg));
-        if (sendto(sock_raw, buf, sizeof(udp_header_out) + strlen(msg),
+        if (sendto(sock_raw, buf, headerlen + strlen(msg),
         MSG_CONFIRM, (const struct sockaddr *)&addr, sizeof(addr)) < 0) {
             perror("UDP sendto failed");
             exit(1);
