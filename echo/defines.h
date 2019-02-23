@@ -13,6 +13,10 @@
 #define MAX_THREAD_CLIENTS 100
 #define THREAD_POOL_SIZE 10
 
+#define RAW_PORT 50000
+#define DEST_IP "192.168.56.101"
+#define SRC_IP  "192.168.56.102"
+
 typedef struct {
     pthread_t tid;
     int pipe[2];
