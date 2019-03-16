@@ -13,7 +13,6 @@ int main(int argc, char *argv[]) {
     char *ip_addr = malloc(NI_MAXHOST);
     struct hostent *host;
     struct sockaddr_in addr;
-    //int addrlen = sizeof(addr);
 
     if (argc != 2) {
         printf("Usage: %s <hostname/ip>\n", argv[0]);
@@ -41,7 +40,8 @@ int main(int argc, char *argv[]) {
     }
     int i, cnt=0;
     for (i=0; i<PACKET_CNT; i++) {
-        cnt += icmp_send(sockfd, &addr, PING_TTL, 1, i); //1 for ping, 2 for trace
+        cnt += icmp_send(sockfd, &addr, PING_TTL, 1, i); //1 for ping
     }
-    printf("\n%d packets sent, %d received (%.2f%%)\n", PACKET_CNT, cnt, 100.0*cnt/PACKET_CNT);
+    printf("\n%d packets sent, %d received (%.2f%%)\n", PACKET_CNT,
+        cnt, 100.0*cnt/PACKET_CNT);
 }
