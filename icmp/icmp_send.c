@@ -61,9 +61,23 @@ int icmp_send(int sockfd, struct sockaddr_in *addr, int ttl,
         clock_gettime(CLOCK_MONOTONIC, &time_end);
         long double rtt = (time_end.tv_sec - time_start.tv_sec) * 1000.0 +
             ((double)(time_end.tv_nsec - time_start.tv_nsec))/1000000.0;
-        printf("%d bytes from %s: icmp_seq=%d time=%.3Lf ms\n", PACKET_SIZE,
-            inet_ntoa(*(struct in_addr*)&r_addr.sin_addr.s_addr),
-            icmp_in->un.echo.sequence, rtt);
-        return 1;
+        if (outtype == 1 && icmp_in->type == ICMP_ECHOREPLY) {
+            printf("%d bytes from %s: icmp_seq=%d time=%.3Lf ms\n", PACKET_SIZE,
+                inet_ntoa(*(struct in_addr*)&r_addr.sin_addr.s_addr),
+                icmp_in->un.echo.sequence, rtt);
+            return 1;
+        }
+        else if (outtype == 2) {
+            if (icmp_in->type == ICMP_TIME_EXCEEDED) {
+                printf("%s: time=%.3Lf ms\n",
+                    inet_ntoa(*(struct in_addr*)&r_addr.sin_addr.s_addr), rtt);
+            }
+            else if (icmp_in->type == ICMP_ECHOREPLY) {
+                printf("%s: time=%.3Lf ms\nDestination reached.\n",
+                    inet_ntoa(*(struct in_addr*)&r_addr.sin_addr.s_addr), rtt);
+                exit(0);
+            }
+            return 1;
+        }
     }
 }
